@@ -43,6 +43,12 @@ export const parseLinkedIn: SiteParser = (doc, url) => {
     "span[class*='bullet']",
     ".job-details-jobs-unified-top-card__primary-description-container",
     "div[class*='primary-description-container']",
+    // SemanticJobDetails layout: no class/id hook on the location text itself.
+    // It's the first <span> in a <p> sibling of the div wrapping the title
+    // link — that <p> also holds "Reposted N days ago" etc. as later spans,
+    // so grab only the first child rather than the whole paragraph's text.
+    ...(jobId ? [`div:has(a[href*='/jobs/view/${jobId}']) ~ p span:first-child`] : []),
+    "div:has(a[href*='/jobs/view/']) ~ p span:first-child",
   ]);
   const jobDescription = firstText(doc, [
     "#job-details",
@@ -52,5 +58,11 @@ export const parseLinkedIn: SiteParser = (doc, url) => {
     "[id^='JobDetails_AboutTheJob_']",
   ]);
 
-  return { jobTitle, company, location, jobDescription, jobUrl: url };
+  // Prefer a canonical /jobs/view/{id} link over the page's actual URL: the
+  // search-results view's URL is a huge, session-specific string (tracking
+  // params, the whole search query) that isn't a stable link back to this
+  // job, while /jobs/view/{id} always is.
+  const jobUrl = jobId ? `https://www.linkedin.com/jobs/view/${jobId}/` : url;
+
+  return { jobTitle, company, location, jobDescription, jobUrl };
 };

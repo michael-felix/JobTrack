@@ -19,7 +19,7 @@ describe("parseLinkedIn", () => {
       company: "Acme Corp",
       location: "Sydney, Australia",
       jobDescription: "We are looking for a Senior Backend Engineer with strong Python and AWS experience.",
-      jobUrl: "https://www.linkedin.com/jobs/view/12345",
+      jobUrl: "https://www.linkedin.com/jobs/view/12345/",
     });
   });
 
@@ -32,24 +32,22 @@ describe("parseLinkedIn", () => {
       company: "Acme Corp",
       location: "Sydney, Australia",
       jobDescription: "We are looking for a Senior Backend Engineer with strong Python and AWS experience.",
-      jobUrl: "https://www.linkedin.com/jobs/search-results/?currentJobId=4454987436",
+      // The search-results URL is a huge, session-specific tracking link, not
+      // a stable one — canonicalize to /jobs/view/{id}/ using the extracted id.
+      jobUrl: "https://www.linkedin.com/jobs/view/4454987436/",
     });
   });
 
-  it("extracts title/company/description from the current SemanticJobDetails layout (atomic/hashed classes, no h1)", () => {
-    // Location has no stable, non-hashed hook on this layout (no href/id/data-testid
-    // like the other fields get) so it's not reliably extractable here; it's an
-    // optional field, so this doesn't block the capture the way a missing
-    // jobTitle/company would.
+  it("extracts structured fields from the current SemanticJobDetails layout (atomic/hashed classes, no h1)", () => {
     const doc = loadFixture("linkedin-semantic-job-details.html");
     const result = parseLinkedIn(doc, "https://www.linkedin.com/jobs/search-results/?currentJobId=4454987436");
 
     expect(result).toEqual({
       jobTitle: "Senior Backend Engineer",
       company: "Acme Corp",
-      location: undefined,
+      location: "Sydney, New South Wales, Australia",
       jobDescription: "We are looking for a Senior Backend Engineer with strong Python and AWS experience.",
-      jobUrl: "https://www.linkedin.com/jobs/search-results/?currentJobId=4454987436",
+      jobUrl: "https://www.linkedin.com/jobs/view/4454987436/",
     });
   });
 

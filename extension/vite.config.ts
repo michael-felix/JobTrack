@@ -11,7 +11,10 @@ export default defineConfig({
   plugins: [
     react(),
     viteStaticCopy({
-      targets: [{ src: "manifest.json", dest: "." }],
+      targets: [
+        { src: "manifest.json", dest: "." },
+        { src: "icons", dest: "." },
+      ],
     }),
   ],
   resolve: {

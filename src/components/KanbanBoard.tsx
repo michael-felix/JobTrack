@@ -160,9 +160,9 @@ function CardContent({ application }: { application: ApplicationSummary }) {
   return (
     <div>
       <p className="font-serif text-base italic font-medium leading-snug text-ink dark:text-ink-dark">
-        {application.jobTitle}
+        {application.company}
       </p>
-      <p className="mt-0.5 text-sm text-ink-muted dark:text-ink-muted-dark">{application.company}</p>
+      <p className="mt-0.5 text-sm text-ink-muted dark:text-ink-muted-dark">{application.jobTitle}</p>
       {application.location && (
         <p className="mt-0.5 text-xs text-ink-faint dark:text-ink-faint-dark">{application.location}</p>
       )}

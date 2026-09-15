@@ -134,21 +134,17 @@ function Card({
   application: ApplicationSummary;
   onOpen: (id: string) => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: application.id });
-
-  const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-    // dnd-kit updates `transform` on every pointer move via this inline
-    // style; the hover/press CSS transition below also targets `transform`,
-    // so without this override each drag update gets eased instead of
-    // applied instantly, making the card visibly lag behind the cursor.
-    transition: isDragging ? "none" : undefined,
-  };
+  // Deliberately not applying dnd-kit's `transform` here: the board already
+  // renders a <DragOverlay> that follows the cursor, so also translating
+  // this source element would draw two moving copies — this one lagging a
+  // frame behind (it goes through a React re-render on every pointer move)
+  // and the overlay tracking the pointer smoothly on top of it. Leaving the
+  // source in place and just dimming it is the standard DragOverlay pattern.
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: application.id });
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
       {...listeners}
       {...attributes}
       onClick={() => onOpen(application.id)}

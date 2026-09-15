@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "JobTrack AI Capture",
+  "version": "0.1.0",
+  "description": "Capture job postings from LinkedIn, Seek, and Indeed straight into JobTrack AI.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "optional_host_permissions": ["http://*/*", "https://*/*"]
+}

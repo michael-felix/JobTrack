@@ -1,0 +1,28 @@
+{
+  "name": "jobtrack-ai-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Chrome extension that captures job postings from LinkedIn, Seek, and Indeed into JobTrack AI.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.270",
+    "@types/jsdom": "^21.1.7",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "jsdom": "^25.0.0",
+    "typescript": "^5.5.2",
+    "vite": "^5.4.0",
+    "vite-plugin-static-copy": "^1.0.6",
+    "vitest": "^3.2.7"
+  }
+}

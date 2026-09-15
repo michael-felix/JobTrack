@@ -136,9 +136,14 @@ function Card({
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: application.id });
 
-  const style = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-    : undefined;
+  const style = {
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    // dnd-kit updates `transform` on every pointer move via this inline
+    // style; the hover/press CSS transition below also targets `transform`,
+    // so without this override each drag update gets eased instead of
+    // applied instantly, making the card visibly lag behind the cursor.
+    transition: isDragging ? "none" : undefined,
+  };
 
   return (
     <div

@@ -48,6 +48,22 @@ const config: Config = {
       boxShadow: {
         soft: "0 1px 2px rgba(42, 35, 28, 0.05), 0 1px 12px rgba(42, 35, 28, 0.04)",
       },
+      keyframes: {
+        "fade-in": { from: { opacity: "0" }, to: { opacity: "1" } },
+        "scale-in": {
+          from: { opacity: "0", transform: "scale(0.96) translateY(4px)" },
+          to: { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+        "slide-up": {
+          from: { opacity: "0", transform: "translateY(6px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "fade-in": "fade-in 0.18s ease-out",
+        "scale-in": "scale-in 0.18s cubic-bezier(0.16, 1, 0.3, 1)",
+        "slide-up": "slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+      },
     },
   },
   plugins: [],

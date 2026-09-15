@@ -1,5 +1,5 @@
 import type { SiteParser } from "@/parsers/types";
-import { firstText } from "@/parsers/dom-utils";
+import { firstBlockText, firstText } from "@/parsers/dom-utils";
 
 /**
  * Seek job posting pages. Seek marks up most fields with stable
@@ -15,7 +15,7 @@ export const parseSeek: SiteParser = (doc, url) => {
 
   const location = firstText(doc, ["[data-automation='job-detail-location']"]);
   const salary = firstText(doc, ["[data-automation='job-detail-salary']"]);
-  const jobDescription = firstText(doc, ["[data-automation='jobAdDetails']"]);
+  const jobDescription = firstBlockText(doc, ["[data-automation='jobAdDetails']"]);
 
   return { jobTitle, company, location, salary, jobDescription, jobUrl: url };
 };

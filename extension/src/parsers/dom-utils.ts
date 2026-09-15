@@ -18,3 +18,47 @@ export function firstText(doc: Document, selectors: string[]): string | undefine
   }
   return undefined;
 }
+
+const BLOCK_TAGS = new Set([
+  "P", "DIV", "LI", "H1", "H2", "H3", "H4", "H5", "H6", "UL", "OL", "SECTION", "ARTICLE", "BLOCKQUOTE", "TR",
+]);
+
+/** Like textContent, but inserts a newline after block-level elements and
+ * <br> instead of silently dropping the layout structure — textContent
+ * flattens a job description's paragraphs/bullets into one run-on line. */
+function blockText(el: Element): string {
+  let out = "";
+  function walk(node: Node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      out += node.textContent ?? "";
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    const tag = (node as Element).tagName;
+    if (tag === "BR") {
+      out += "\n";
+      return;
+    }
+    for (const child of Array.from(node.childNodes)) walk(child);
+    if (BLOCK_TAGS.has(tag) && !out.endsWith("\n")) out += "\n";
+  }
+  walk(el);
+  return out;
+}
+
+/** Same selector-fallback strategy as firstText, but for multi-paragraph
+ * fields like job descriptions: preserves line breaks between paragraphs
+ * and list items instead of collapsing all whitespace to single spaces. */
+export function firstBlockText(doc: Document, selectors: string[]): string | undefined {
+  for (const selector of selectors) {
+    for (const el of doc.querySelectorAll(selector)) {
+      const text = blockText(el)
+        .replace(/[ \t]+/g, " ")
+        .replace(/ *\n */g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+      if (text) return text;
+    }
+  }
+  return undefined;
+}

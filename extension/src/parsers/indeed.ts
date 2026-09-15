@@ -1,5 +1,5 @@
 import type { SiteParser } from "@/parsers/types";
-import { firstText } from "@/parsers/dom-utils";
+import { firstBlockText, firstText } from "@/parsers/dom-utils";
 
 /** Indeed job posting pages. */
 export const parseIndeed: SiteParser = (doc, url) => {
@@ -10,7 +10,7 @@ export const parseIndeed: SiteParser = (doc, url) => {
 
   const location = firstText(doc, ["[data-testid='inlineHeader-companyLocation']"]);
   const salary = firstText(doc, ["#salaryInfoAndJobType", "span[class*='salary']"]);
-  const jobDescription = firstText(doc, ["#jobDescriptionText"]);
+  const jobDescription = firstBlockText(doc, ["#jobDescriptionText"]);
 
   return { jobTitle, company, location, salary, jobDescription, jobUrl: url };
 };

@@ -222,7 +222,7 @@ function DocumentList({
         {documents.map((doc) => (
           <li
             key={doc.id}
-            className="flex items-start justify-between rounded-md border border-hairline p-2.5 dark:border-hairline-dark"
+            className="flex items-start justify-between rounded-md border border-hairline p-2.5 transition-colors hover:border-accent/40 hover:bg-accent-soft/30 dark:border-hairline-dark dark:hover:border-accent-dark/40 dark:hover:bg-accent-soft-dark/30"
           >
             <div>
               <p className="text-sm font-medium">{doc.label}</p>

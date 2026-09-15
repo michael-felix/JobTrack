@@ -82,7 +82,7 @@ export function TokensManager({ initialTokens }: { initialTokens: TokenSummary[]
         {tokens.map((token) => (
           <li
             key={token.id}
-            className="flex items-center justify-between rounded-md border border-hairline p-2.5 text-sm dark:border-hairline-dark"
+            className="flex items-center justify-between rounded-md border border-hairline p-2.5 text-sm transition-colors hover:border-accent/40 hover:bg-accent-soft/30 dark:border-hairline-dark dark:hover:border-accent-dark/40 dark:hover:bg-accent-soft-dark/30"
           >
             <div>
               <p className="font-medium">{token.label}</p>

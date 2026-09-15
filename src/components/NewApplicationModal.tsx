@@ -40,8 +40,8 @@ export function NewApplicationModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/30 px-4 backdrop-blur-[2px] dark:bg-black/50">
-      <div className="w-full max-w-lg rounded-xl border border-hairline bg-surface p-6 shadow-lg dark:border-hairline-dark dark:bg-surface-dark">
+    <div className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-ink/30 px-4 backdrop-blur-[2px] dark:bg-black/50">
+      <div className="w-full max-w-lg animate-scale-in rounded-xl border border-hairline bg-surface p-6 shadow-lg dark:border-hairline-dark dark:bg-surface-dark">
         <div className="mb-5 flex items-center justify-between">
           <h2 className="heading text-xl">Add job application</h2>
           <button

@@ -9,8 +9,11 @@ import {
   STAGES,
   STAGE_LABELS,
 } from "@/lib/types";
+import { cleanMultilineText } from "@/lib/format-text";
 import { MatchScorePanel } from "@/components/MatchScorePanel";
 import { InterviewPrepPanel } from "@/components/InterviewPrepPanel";
+
+const DESCRIPTION_PREVIEW_LENGTH = 600;
 
 interface Props {
   application: ApplicationDetailData;
@@ -135,84 +138,106 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
         ))}
       </div>
 
-      {tab === "overview" && (
-        <div className="space-y-5">
-          <section className="card">
-            <h2 className="mb-2 font-medium">Follow-up date</h2>
-            <input
-              type="date"
-              className="field-input mt-0 w-auto"
-              value={application.followUpDate ? application.followUpDate.slice(0, 10) : ""}
-              onChange={(e) =>
-                patch({ followUpDate: e.target.value ? new Date(e.target.value).toISOString() : null })
-              }
-            />
-          </section>
-
-          {application.jobDescription && (
+      <div key={tab} className="animate-slide-up">
+        {tab === "overview" && (
+          <div className="space-y-5">
             <section className="card">
-              <h2 className="mb-2 font-medium">Job description</h2>
-              <p className="max-h-64 overflow-y-auto whitespace-pre-wrap text-sm text-ink-muted dark:text-ink-muted-dark">
-                {application.jobDescription}
-              </p>
-            </section>
-          )}
-
-          <section className="card">
-            <h2 className="mb-3 font-medium">Notes &amp; timeline</h2>
-            <div className="mb-3 flex gap-2">
+              <h2 className="mb-2 font-medium">Follow-up date</h2>
               <input
-                className="field-input mt-0"
-                placeholder="Add a note…"
-                value={noteText}
-                onChange={(e) => setNoteText(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddNote()}
+                type="date"
+                className="field-input mt-0 w-auto"
+                value={application.followUpDate ? application.followUpDate.slice(0, 10) : ""}
+                onChange={(e) =>
+                  patch({ followUpDate: e.target.value ? new Date(e.target.value).toISOString() : null })
+                }
               />
-              <button onClick={handleAddNote} disabled={savingNote} className="btn-primary shrink-0">
-                Add
-              </button>
-            </div>
-            <ul className="space-y-2">
-              {application.events.map((event) => (
-                <li key={event.id} className="text-sm">
-                  <span className="text-ink-faint dark:text-ink-faint-dark">
-                    {new Date(event.createdAt).toLocaleString()}
-                  </span>
-                  {event.fromStage && event.fromStage !== event.toStage && (
-                    <span className="ml-2 text-ink-muted dark:text-ink-muted-dark">
-                      {STAGE_LABELS[event.fromStage]} → {STAGE_LABELS[event.toStage]}
+            </section>
+
+            {application.jobDescription && <JobDescription text={application.jobDescription} />}
+
+            <section className="card">
+              <h2 className="mb-3 font-medium">Notes &amp; timeline</h2>
+              <div className="mb-3 flex gap-2">
+                <input
+                  className="field-input mt-0"
+                  placeholder="Add a note…"
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddNote()}
+                />
+                <button onClick={handleAddNote} disabled={savingNote} className="btn-primary shrink-0">
+                  Add
+                </button>
+              </div>
+              <ul className="space-y-1">
+                {application.events.map((event) => (
+                  <li
+                    key={event.id}
+                    className="rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent-soft/40 dark:hover:bg-accent-soft-dark/40"
+                  >
+                    <span className="text-ink-faint dark:text-ink-faint-dark">
+                      {new Date(event.createdAt).toLocaleString()}
                     </span>
-                  )}
-                  {event.note && <span className="ml-2">{event.note}</span>}
-                </li>
-              ))}
-              {application.events.length === 0 && (
-                <p className="text-sm text-ink-faint dark:text-ink-faint-dark">No activity yet.</p>
-              )}
-            </ul>
-          </section>
-        </div>
-      )}
+                    {event.fromStage && event.fromStage !== event.toStage && (
+                      <span className="ml-2 text-ink-muted dark:text-ink-muted-dark">
+                        {STAGE_LABELS[event.fromStage]} → {STAGE_LABELS[event.toStage]}
+                      </span>
+                    )}
+                    {event.note && <span className="ml-2">{event.note}</span>}
+                  </li>
+                ))}
+                {application.events.length === 0 && (
+                  <p className="text-sm text-ink-faint dark:text-ink-faint-dark">No activity yet.</p>
+                )}
+              </ul>
+            </section>
+          </div>
+        )}
 
-      {tab === "match" && (
-        <MatchScorePanel
-          applicationId={application.id}
-          jobDescription={application.jobDescription}
-          resumes={resumes}
-          resumeVersionId={application.resumeVersionId}
-          coverLetters={coverLetters}
-          coverLetterVersionId={application.coverLetterVersionId}
-          latestMatchScore={application.matchScores[0] ?? null}
-          onDocumentsChange={(fields) => patch(fields)}
-          onMatchScoreComputed={(matchScore) =>
-            setApplication((prev) => ({ ...prev, matchScores: [matchScore, ...prev.matchScores] }))
-          }
-        />
-      )}
+        {tab === "match" && (
+          <MatchScorePanel
+            applicationId={application.id}
+            jobDescription={application.jobDescription}
+            resumes={resumes}
+            resumeVersionId={application.resumeVersionId}
+            coverLetters={coverLetters}
+            coverLetterVersionId={application.coverLetterVersionId}
+            latestMatchScore={application.matchScores[0] ?? null}
+            onDocumentsChange={(fields) => patch(fields)}
+            onMatchScoreComputed={(matchScore) =>
+              setApplication((prev) => ({ ...prev, matchScores: [matchScore, ...prev.matchScores] }))
+            }
+          />
+        )}
 
-      {tab === "prep" && (
-        <InterviewPrepPanel applicationId={application.id} initialPrep={application.interviewPrep} />
-      )}
+        {tab === "prep" && (
+          <InterviewPrepPanel applicationId={application.id} initialPrep={application.interviewPrep} />
+        )}
+      </div>
     </div>
+  );
+}
+
+function JobDescription({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const cleaned = cleanMultilineText(text);
+  const isLong = cleaned.length > DESCRIPTION_PREVIEW_LENGTH;
+  const shown = expanded || !isLong ? cleaned : cleaned.slice(0, DESCRIPTION_PREVIEW_LENGTH).trimEnd() + "…";
+
+  return (
+    <section className="card">
+      <h2 className="mb-2 font-medium">Job description</h2>
+      <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-muted dark:text-ink-muted-dark">
+        {shown}
+      </p>
+      {isLong && (
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-2 text-sm font-medium text-accent hover:underline dark:text-accent-dark"
+        >
+          {expanded ? "Show less" : "Show more"}
+        </button>
+      )}
+    </section>
   );
 }

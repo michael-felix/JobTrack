@@ -1,5 +1,5 @@
 import type { SiteParser } from "@/parsers/types";
-import { firstText } from "@/parsers/dom-utils";
+import { firstBlockText, firstText } from "@/parsers/dom-utils";
 
 /**
  * LinkedIn job posting pages. Selectors are a best-effort approximation of
@@ -50,7 +50,7 @@ export const parseLinkedIn: SiteParser = (doc, url) => {
     ...(jobId ? [`div:has(a[href*='/jobs/view/${jobId}']) ~ p span:first-child`] : []),
     "div:has(a[href*='/jobs/view/']) ~ p span:first-child",
   ]);
-  const jobDescription = firstText(doc, [
+  const jobDescription = firstBlockText(doc, [
     "#job-details",
     ".description__text",
     "div[class*='description']",

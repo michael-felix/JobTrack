@@ -147,7 +147,7 @@ function Card({
       {...listeners}
       {...attributes}
       onClick={() => onOpen(application.id)}
-      className={`cursor-grab rounded-lg border border-hairline bg-surface p-3.5 shadow-soft transition-shadow hover:shadow-md dark:border-hairline-dark dark:bg-surface-dark ${
+      className={`cursor-grab rounded-lg border border-hairline bg-surface p-3.5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md dark:border-hairline-dark dark:bg-surface-dark dark:hover:border-accent-dark/40 ${
         isDragging ? "opacity-40" : ""
       }`}
     >
@@ -159,7 +159,7 @@ function Card({
 function CardContent({ application }: { application: ApplicationSummary }) {
   return (
     <div>
-      <p className="font-serif text-[15px] font-medium leading-snug text-ink dark:text-ink-dark">
+      <p className="font-serif text-base italic font-medium leading-snug text-ink dark:text-ink-dark">
         {application.jobTitle}
       </p>
       <p className="mt-0.5 text-sm text-ink-muted dark:text-ink-muted-dark">{application.company}</p>

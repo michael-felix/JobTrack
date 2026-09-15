@@ -10,13 +10,33 @@ body {
   @apply bg-paper font-sans text-ink dark:bg-paper-dark dark:text-ink-dark;
 }
 
+a,
+button,
+select,
+input,
+textarea {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @layer components {
   .card {
-    @apply rounded-xl border border-hairline bg-surface p-5 shadow-soft dark:border-hairline-dark dark:bg-surface-dark;
+    @apply rounded-xl border border-hairline bg-surface p-5 shadow-soft transition-shadow dark:border-hairline-dark dark:bg-surface-dark;
   }
 
   .heading {
-    @apply font-serif font-semibold tracking-tight text-ink dark:text-ink-dark;
+    @apply font-serif italic font-semibold tracking-tight text-ink dark:text-ink-dark;
   }
 
   .field-label {
@@ -28,15 +48,15 @@ body {
   }
 
   .btn-primary {
-    @apply rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50 dark:bg-accent-dark dark:text-paper-dark dark:hover:bg-accent-hover-dark;
+    @apply rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 dark:bg-accent-dark dark:text-paper-dark dark:hover:bg-accent-hover-dark;
   }
 
   .btn-secondary {
-    @apply rounded-md border border-hairline px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-accent-soft disabled:cursor-not-allowed disabled:opacity-50 dark:border-hairline-dark dark:text-ink-dark dark:hover:bg-accent-soft-dark;
+    @apply rounded-md border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-accent-soft active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 dark:border-hairline-dark dark:text-ink-dark dark:hover:bg-accent-soft-dark;
   }
 
   .btn-danger {
-    @apply rounded-md border border-stage-rejected/40 px-4 py-2 text-sm font-medium text-stage-rejected transition-colors hover:bg-stage-rejected/10 dark:border-stage-dark-rejected/50 dark:text-stage-dark-rejected;
+    @apply rounded-md border border-stage-rejected/40 px-4 py-2 text-sm font-medium text-stage-rejected hover:bg-stage-rejected/10 active:scale-[0.98] dark:border-stage-dark-rejected/50 dark:text-stage-dark-rejected;
   }
 
   .tag {

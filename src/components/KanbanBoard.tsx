@@ -16,59 +16,50 @@ import {
 import { ApplicationStage, ApplicationSummary, STAGES, STAGE_LABELS } from "@/lib/types";
 import { NewApplicationModal } from "@/components/NewApplicationModal";
 
-const STAGE_STYLES: Record<
-  ApplicationStage,
-  { dot: string; wash: string; border: string; cardBorder: string; text: string; avatar: string }
-> = {
+// Card accent (left border + avatar) is one consistent brand color across
+// every stage now, rather than a different color per stage — the column
+// wash/dot still carry per-stage color so columns stay distinguishable.
+const CARD_ACCENT = {
+  border: "border-l-accent dark:border-l-accent-dark",
+  avatar: "bg-accent-soft text-accent-hover dark:bg-accent-soft-dark dark:text-accent-dark",
+};
+
+const STAGE_STYLES: Record<ApplicationStage, { dot: string; wash: string; border: string; text: string }> = {
   SAVED: {
     dot: "bg-stage-saved dark:bg-stage-dark-saved",
     wash: "bg-stage-saved/[0.06] dark:bg-stage-dark-saved/[0.06]",
     border: "border-stage-saved/40 dark:border-stage-dark-saved/40",
-    cardBorder: "border-l-stage-saved dark:border-l-stage-dark-saved",
     text: "text-stage-saved dark:text-stage-dark-saved",
-    avatar: "bg-stage-saved/15 text-stage-saved dark:bg-stage-dark-saved/20 dark:text-stage-dark-saved",
   },
   APPLIED: {
     dot: "bg-stage-applied dark:bg-stage-dark-applied",
     wash: "bg-stage-applied/[0.06] dark:bg-stage-dark-applied/[0.06]",
     border: "border-stage-applied/40 dark:border-stage-dark-applied/40",
-    cardBorder: "border-l-stage-applied dark:border-l-stage-dark-applied",
     text: "text-stage-applied dark:text-stage-dark-applied",
-    avatar: "bg-stage-applied/15 text-stage-applied dark:bg-stage-dark-applied/20 dark:text-stage-dark-applied",
   },
   SCREENING: {
     dot: "bg-stage-screening dark:bg-stage-dark-screening",
     wash: "bg-stage-screening/[0.06] dark:bg-stage-dark-screening/[0.06]",
     border: "border-stage-screening/40 dark:border-stage-dark-screening/40",
-    cardBorder: "border-l-stage-screening dark:border-l-stage-dark-screening",
     text: "text-stage-screening dark:text-stage-dark-screening",
-    avatar:
-      "bg-stage-screening/15 text-stage-screening dark:bg-stage-dark-screening/20 dark:text-stage-dark-screening",
   },
   INTERVIEW: {
     dot: "bg-stage-interview dark:bg-stage-dark-interview",
     wash: "bg-stage-interview/[0.06] dark:bg-stage-dark-interview/[0.06]",
     border: "border-stage-interview/40 dark:border-stage-dark-interview/40",
-    cardBorder: "border-l-stage-interview dark:border-l-stage-dark-interview",
     text: "text-stage-interview dark:text-stage-dark-interview",
-    avatar:
-      "bg-stage-interview/15 text-stage-interview dark:bg-stage-dark-interview/20 dark:text-stage-dark-interview",
   },
   OFFER: {
     dot: "bg-stage-offer dark:bg-stage-dark-offer",
     wash: "bg-stage-offer/[0.06] dark:bg-stage-dark-offer/[0.06]",
     border: "border-stage-offer/40 dark:border-stage-dark-offer/40",
-    cardBorder: "border-l-stage-offer dark:border-l-stage-dark-offer",
     text: "text-stage-offer dark:text-stage-dark-offer",
-    avatar: "bg-stage-offer/15 text-stage-offer dark:bg-stage-dark-offer/20 dark:text-stage-dark-offer",
   },
   REJECTED: {
     dot: "bg-stage-rejected dark:bg-stage-dark-rejected",
     wash: "bg-stage-rejected/[0.06] dark:bg-stage-dark-rejected/[0.06]",
     border: "border-stage-rejected/40 dark:border-stage-dark-rejected/40",
-    cardBorder: "border-l-stage-rejected dark:border-l-stage-dark-rejected",
     text: "text-stage-rejected dark:text-stage-dark-rejected",
-    avatar: "bg-stage-rejected/15 text-stage-rejected dark:bg-stage-dark-rejected/20 dark:text-stage-dark-rejected",
   },
 };
 
@@ -168,7 +159,7 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div
           className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 ${
-            showRejected ? "xl:grid-cols-6" : "xl:grid-cols-5"
+            showRejected ? "xl:grid-cols-5" : "xl:grid-cols-4"
           }`}
         >
           {visibleStages.map((stage) => (
@@ -245,7 +236,6 @@ function Card({
   // and the overlay tracking the pointer smoothly on top of it. Leaving the
   // source in place and just dimming it is the standard DragOverlay pattern.
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: application.id });
-  const cardBorder = STAGE_STYLES[application.stage].cardBorder;
 
   return (
     <div
@@ -253,7 +243,7 @@ function Card({
       {...listeners}
       {...attributes}
       onClick={() => onOpen(application.id)}
-      className={`cursor-grab rounded-lg border border-hairline bg-surface p-3.5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md active:scale-[0.98] dark:border-hairline-dark dark:bg-surface-dark dark:hover:border-accent-dark/40 border-l-[3px] ${cardBorder} ${
+      className={`cursor-grab rounded-lg border border-hairline bg-surface p-3.5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md active:scale-[0.98] dark:border-hairline-dark dark:bg-surface-dark dark:hover:border-accent-dark/40 border-l-[3px] ${CARD_ACCENT.border} ${
         isDragging ? "opacity-40" : ""
       }`}
     >
@@ -263,12 +253,10 @@ function Card({
 }
 
 function CardContent({ application }: { application: ApplicationSummary }) {
-  const avatar = STAGE_STYLES[application.stage].avatar;
-
   return (
     <div className="flex gap-2.5">
       <div
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-serif text-sm italic font-semibold ${avatar}`}
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-serif text-sm italic font-semibold ${CARD_ACCENT.avatar}`}
       >
         {application.company.charAt(0).toUpperCase()}
       </div>

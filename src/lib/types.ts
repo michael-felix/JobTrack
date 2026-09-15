@@ -1,9 +1,14 @@
 export type ApplicationStage = "SAVED" | "APPLIED" | "SCREENING" | "INTERVIEW" | "OFFER" | "REJECTED";
 
-export const STAGES: ApplicationStage[] = ["SAVED", "APPLIED", "SCREENING", "INTERVIEW", "OFFER", "REJECTED"];
+/** The stages shown as board columns and offered in the stage picker.
+ * Deliberately excludes SCREENING — it's retired from the active pipeline,
+ * but kept in the ApplicationStage type/STAGE_LABELS below because past
+ * ApplicationEvent timeline rows can still reference it and must keep
+ * rendering correctly. */
+export const STAGES: ApplicationStage[] = ["SAVED", "APPLIED", "INTERVIEW", "OFFER", "REJECTED"];
 
 export const STAGE_LABELS: Record<ApplicationStage, string> = {
-  SAVED: "Saved",
+  SAVED: "Not Applied",
   APPLIED: "Applied",
   SCREENING: "Screening",
   INTERVIEW: "Interview",

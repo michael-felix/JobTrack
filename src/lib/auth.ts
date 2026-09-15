@@ -1,6 +1,7 @@
 import { randomBytes, createHash } from "crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
+import { AppError } from "@/lib/errors";
 
 export const SESSION_COOKIE_NAME = "jobtrack_session";
 const REMEMBERED_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days, "stay signed in"
@@ -27,7 +28,7 @@ export async function verifyPassword(password: string, passwordHash: string): Pr
 export async function signup(email: string, password: string, name?: string) {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    throw new Error("An account with this email already exists.");
+    throw new AppError("An account with this email already exists.");
   }
   const passwordHash = await hashPassword(password);
   const user = await prisma.user.create({
@@ -51,7 +52,7 @@ export async function login(email: string, password: string, rememberMe: boolean
   // attacker enumerate registered emails by measuring response time.
   const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
   if (!user || !valid) {
-    throw new Error("Invalid email or password.");
+    throw new AppError("Invalid email or password.");
   }
   return createSession(user.id, rememberMe);
 }

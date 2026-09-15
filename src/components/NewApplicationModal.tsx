@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ApplicationSummary } from "@/lib/types";
+import { Spinner } from "@/components/Spinner";
 
 export function NewApplicationModal({
   onClose,
@@ -77,6 +78,7 @@ export function NewApplicationModal({
               Cancel
             </button>
             <button type="submit" disabled={submitting} className="btn-primary">
+              {submitting && <Spinner className="h-4 w-4" />}
               {submitting ? "Saving…" : "Save"}
             </button>
           </div>

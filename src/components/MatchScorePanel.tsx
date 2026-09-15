@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { DocumentVersionSummary, MatchScoreData } from "@/lib/types";
+import { Spinner } from "@/components/Spinner";
 
 interface Props {
   applicationId: string;
@@ -94,6 +95,7 @@ export function MatchScorePanel({
 
       {jobDescription && (
         <button onClick={handleCompute} disabled={computing} className="btn-primary">
+          {computing && <Spinner className="h-4 w-4" />}
           {computing ? "Scoring…" : "Recompute match score"}
         </button>
       )}

@@ -48,15 +48,15 @@ textarea {
   }
 
   .btn-primary {
-    @apply rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 dark:bg-accent-dark dark:text-paper-dark dark:hover:bg-accent-hover-dark;
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 dark:bg-accent-dark dark:text-paper-dark dark:hover:bg-accent-hover-dark;
   }
 
   .btn-secondary {
-    @apply rounded-md border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-accent-soft active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 dark:border-hairline-dark dark:text-ink-dark dark:hover:bg-accent-soft-dark;
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-hairline px-4 py-2 text-sm font-medium text-ink hover:bg-accent-soft active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 dark:border-hairline-dark dark:text-ink-dark dark:hover:bg-accent-soft-dark;
   }
 
   .btn-danger {
-    @apply rounded-md border border-stage-rejected/40 px-4 py-2 text-sm font-medium text-stage-rejected hover:bg-stage-rejected/10 active:scale-[0.98] dark:border-stage-dark-rejected/50 dark:text-stage-dark-rejected;
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-stage-rejected/40 px-4 py-2 text-sm font-medium text-stage-rejected hover:bg-stage-rejected/10 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 dark:border-stage-dark-rejected/50 dark:text-stage-dark-rejected;
   }
 
   .tag {

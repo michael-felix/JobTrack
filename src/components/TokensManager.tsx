@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Spinner } from "@/components/Spinner";
 
 interface TokenSummary {
   id: string;
@@ -15,6 +16,7 @@ export function TokensManager({ initialTokens }: { initialTokens: TokenSummary[]
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justCreatedToken, setJustCreatedToken] = useState<string | null>(null);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -43,8 +45,13 @@ export function TokensManager({ initialTokens }: { initialTokens: TokenSummary[]
 
   async function handleRevoke(id: string) {
     if (!confirm("Revoke this token? Any extension using it will stop working immediately.")) return;
+    setRevokingId(id);
     const res = await fetch(`/api/tokens/${id}`, { method: "DELETE" });
-    if (res.ok) setTokens((prev) => prev.filter((t) => t.id !== id));
+    if (res.ok) {
+      setTokens((prev) => prev.filter((t) => t.id !== id));
+    } else {
+      setRevokingId(null);
+    }
   }
 
   return (
@@ -65,6 +72,7 @@ export function TokensManager({ initialTokens }: { initialTokens: TokenSummary[]
           onChange={(e) => setLabel(e.target.value)}
         />
         <button type="submit" disabled={creating} className="btn-primary shrink-0">
+          {creating && <Spinner className="h-4 w-4" />}
           {creating ? "Creating…" : "Generate token"}
         </button>
       </form>
@@ -93,8 +101,10 @@ export function TokensManager({ initialTokens }: { initialTokens: TokenSummary[]
             </div>
             <button
               onClick={() => handleRevoke(token.id)}
-              className="text-xs font-medium text-stage-rejected hover:underline dark:text-stage-dark-rejected"
+              disabled={revokingId === token.id}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-stage-rejected hover:underline disabled:opacity-50 dark:text-stage-dark-rejected"
             >
+              {revokingId === token.id && <Spinner className="h-3 w-3" />}
               Revoke
             </button>
           </li>

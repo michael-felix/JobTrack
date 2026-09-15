@@ -12,6 +12,7 @@ import {
 import { cleanMultilineText } from "@/lib/format-text";
 import { MatchScorePanel } from "@/components/MatchScorePanel";
 import { InterviewPrepPanel } from "@/components/InterviewPrepPanel";
+import { Spinner } from "@/components/Spinner";
 
 const DESCRIPTION_PREVIEW_LENGTH = 600;
 
@@ -35,6 +36,8 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
   const [tab, setTab] = useState<TabId>("overview");
   const [noteText, setNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [changingStage, setChangingStage] = useState(false);
 
   async function patch(fields: Record<string, unknown>) {
     const res = await fetch(`/api/applications/${application.id}`, {
@@ -50,6 +53,7 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
 
   async function handleStageChange(toStage: ApplicationStage) {
     if (toStage === application.stage) return;
+    setChangingStage(true);
     const res = await fetch(`/api/applications/${application.id}/stage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -59,6 +63,7 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
       setApplication((prev) => ({ ...prev, stage: toStage }));
       router.refresh();
     }
+    setChangingStage(false);
   }
 
   async function handleAddNote() {
@@ -79,8 +84,13 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
 
   async function handleDelete() {
     if (!confirm("Delete this application? This cannot be undone.")) return;
+    setDeleting(true);
     const res = await fetch(`/api/applications/${application.id}`, { method: "DELETE" });
-    if (res.ok) router.push("/board");
+    if (res.ok) {
+      router.push("/board");
+    } else {
+      setDeleting(false);
+    }
   }
 
   return (
@@ -105,19 +115,26 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
           )}
         </div>
         <div className="flex items-center gap-2">
-          <select
-            value={application.stage}
-            onChange={(e) => handleStageChange(e.target.value as ApplicationStage)}
-            className="field-input mt-0 w-auto"
-          >
-            {STAGES.map((stage) => (
-              <option key={stage} value={stage}>
-                {STAGE_LABELS[stage]}
-              </option>
-            ))}
-          </select>
-          <button onClick={handleDelete} className="btn-danger">
-            Delete
+          <div className="relative">
+            <select
+              value={application.stage}
+              onChange={(e) => handleStageChange(e.target.value as ApplicationStage)}
+              disabled={changingStage}
+              className="field-input mt-0 w-auto"
+            >
+              {STAGES.map((stage) => (
+                <option key={stage} value={stage}>
+                  {STAGE_LABELS[stage]}
+                </option>
+              ))}
+            </select>
+            {changingStage && (
+              <Spinner className="pointer-events-none absolute right-8 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-accent dark:text-accent-dark" />
+            )}
+          </div>
+          <button onClick={handleDelete} disabled={deleting} className="btn-danger">
+            {deleting && <Spinner className="h-4 w-4" />}
+            {deleting ? "Deleting…" : "Delete"}
           </button>
         </div>
       </div>
@@ -166,6 +183,7 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
                   onKeyDown={(e) => e.key === "Enter" && handleAddNote()}
                 />
                 <button onClick={handleAddNote} disabled={savingNote} className="btn-primary shrink-0">
+                  {savingNote && <Spinner className="h-4 w-4" />}
                   Add
                 </button>
               </div>

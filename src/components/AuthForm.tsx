@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/Spinner";
 
 interface AuthFormProps {
   mode: "login" | "signup";
@@ -69,22 +71,23 @@ export function AuthForm({ mode }: AuthFormProps) {
       </div>
       {error && <p className="text-sm text-stage-rejected dark:text-stage-dark-rejected">{error}</p>}
       <button type="submit" disabled={submitting} className="btn-primary w-full">
+        {submitting && <Spinner className="h-4 w-4" />}
         {submitting ? "Please wait…" : mode === "login" ? "Log in" : "Sign up"}
       </button>
       <p className="text-center text-sm text-ink-muted dark:text-ink-muted-dark">
         {mode === "login" ? (
           <>
             Need an account?{" "}
-            <a href="/signup" className="font-medium text-accent hover:underline dark:text-accent-dark">
+            <Link href="/signup" className="font-medium text-accent hover:underline dark:text-accent-dark">
               Sign up
-            </a>
+            </Link>
           </>
         ) : (
           <>
             Already have an account?{" "}
-            <a href="/login" className="font-medium text-accent hover:underline dark:text-accent-dark">
+            <Link href="/login" className="font-medium text-accent hover:underline dark:text-accent-dark">
               Log in
-            </a>
+            </Link>
           </>
         )}
       </p>

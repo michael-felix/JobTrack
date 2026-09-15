@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { DocumentType, DocumentVersionSummary } from "@/lib/types";
+import { Spinner } from "@/components/Spinner";
 
 interface DiffPart {
   type: "added" | "removed" | "unchanged";
@@ -22,6 +23,7 @@ export function DocumentsManager({ initialDocuments }: { initialDocuments: Docum
   const [toId, setToId] = useState("");
   const [diffParts, setDiffParts] = useState<DiffPart[] | null>(null);
   const [diffing, setDiffing] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
@@ -67,8 +69,13 @@ export function DocumentsManager({ initialDocuments }: { initialDocuments: Docum
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this version?")) return;
+    setDeletingId(id);
     const res = await fetch(`/api/documents/${id}`, { method: "DELETE" });
-    if (res.ok) setDocuments((docs) => docs.filter((d) => d.id !== id));
+    if (res.ok) {
+      setDocuments((docs) => docs.filter((d) => d.id !== id));
+    } else {
+      setDeletingId(null);
+    }
   }
 
   async function handleCompare() {
@@ -142,14 +149,20 @@ export function DocumentsManager({ initialDocuments }: { initialDocuments: Docum
           {error && <p className="text-sm text-stage-rejected dark:text-stage-dark-rejected">{error}</p>}
 
           <button type="submit" disabled={uploading} className="btn-primary">
+            {uploading && <Spinner className="h-4 w-4" />}
             {uploading ? "Uploading…" : "Upload version"}
           </button>
         </form>
       </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <DocumentList title="Résumé versions" documents={resumes} onDelete={handleDelete} />
-        <DocumentList title="Cover letter versions" documents={coverLetters} onDelete={handleDelete} />
+        <DocumentList title="Résumé versions" documents={resumes} onDelete={handleDelete} deletingId={deletingId} />
+        <DocumentList
+          title="Cover letter versions"
+          documents={coverLetters}
+          onDelete={handleDelete}
+          deletingId={deletingId}
+        />
       </div>
 
       <section className="card">
@@ -178,6 +191,7 @@ export function DocumentsManager({ initialDocuments }: { initialDocuments: Docum
             </select>
           </div>
           <button onClick={handleCompare} disabled={diffing || !fromId || !toId} className="btn-primary">
+            {diffing && <Spinner className="h-4 w-4" />}
             {diffing ? "Comparing…" : "Compare"}
           </button>
         </div>
@@ -209,10 +223,12 @@ function DocumentList({
   title,
   documents,
   onDelete,
+  deletingId,
 }: {
   title: string;
   documents: DocumentVersionSummary[];
   onDelete: (id: string) => void;
+  deletingId: string | null;
 }) {
   return (
     <section className="card">
@@ -235,8 +251,10 @@ function DocumentList({
             </div>
             <button
               onClick={() => onDelete(doc.id)}
-              className="text-xs font-medium text-stage-rejected hover:underline dark:text-stage-dark-rejected"
+              disabled={deletingId === doc.id}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-stage-rejected hover:underline disabled:opacity-50 dark:text-stage-dark-rejected"
             >
+              {deletingId === doc.id && <Spinner className="h-3 w-3" />}
               Delete
             </button>
           </li>

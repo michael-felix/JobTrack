@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 
 const LINKS = [
@@ -22,24 +23,29 @@ export function NavBar({ userName }: { userName: string }) {
     <nav className="border-b border-hairline bg-surface dark:border-hairline-dark dark:bg-surface-dark">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <div className="flex items-center gap-8">
-          <a href="/board" className="heading text-xl italic">
+          <Link href="/board" className="heading text-xl italic transition-opacity hover:opacity-80">
             JobTrack
-          </a>
+          </Link>
           <div className="flex items-center gap-5">
             {LINKS.map((link) => {
               const active = pathname?.startsWith(link.href);
               return (
-                <a
+                <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm transition-colors ${
+                  className={`relative text-sm transition-colors ${
                     active
                       ? "font-medium text-accent dark:text-accent-dark"
                       : "text-ink-muted hover:text-ink dark:text-ink-muted-dark dark:hover:text-ink-dark"
                   }`}
                 >
                   {link.label}
-                </a>
+                  <span
+                    className={`absolute -bottom-[17px] left-0 h-0.5 w-full bg-accent transition-transform duration-200 dark:bg-accent-dark ${
+                      active ? "scale-x-100" : "scale-x-0"
+                    }`}
+                  />
+                </Link>
               );
             })}
           </div>

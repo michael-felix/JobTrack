@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { InterviewPrepData } from "@/lib/types";
+import { Spinner } from "@/components/Spinner";
 
 interface Props {
   applicationId: string;
@@ -131,6 +132,7 @@ export function InterviewPrepPanel({ applicationId, initialPrep }: Props) {
 
         <div className="flex items-center gap-3">
           <button onClick={handleSave} disabled={saving} className="btn-primary">
+            {saving && <Spinner className="h-4 w-4" />}
             {saving ? "Saving…" : "Save interview prep"}
           </button>
           {savedAt && (

@@ -68,12 +68,12 @@ export function AuthForm({ mode }: AuthFormProps) {
       </div>
       <div>
         <label className="field-label">Password</label>
-        <div className="relative">
+        <div className="relative mt-1.5">
           <input
             type={showPassword ? "text" : "password"}
             required
             minLength={8}
-            className="field-input pr-16"
+            className="field-input mt-0 pr-10"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -81,9 +81,10 @@ export function AuthForm({ mode }: AuthFormProps) {
             type="button"
             onClick={() => setShowPassword((v) => !v)}
             tabIndex={-1}
-            className="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-1 text-xs font-medium text-ink-muted hover:text-ink dark:text-ink-muted-dark dark:hover:text-ink-dark"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            className="absolute inset-y-0 right-0 flex w-9 items-center justify-center text-ink-muted hover:text-ink dark:text-ink-muted-dark dark:hover:text-ink-dark"
           >
-            {showPassword ? "Hide" : "Show"}
+            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
           </button>
         </div>
       </div>
@@ -123,5 +124,34 @@ export function AuthForm({ mode }: AuthFormProps) {
         )}
       </p>
     </form>
+  );
+}
+
+function EyeIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path
+        d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+
+function EyeOffIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path
+        d="M3 3l18 18M10.6 5.2A10.9 10.9 0 0 1 12 5c7 0 10.5 7 10.5 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.6 8.5 1.5 12 1.5 12S5 19 12 19a10.6 10.6 0 0 0 4.4-.9M9.9 9.9a3 3 0 0 0 4.2 4.2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

@@ -3,7 +3,8 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 
 export const SESSION_COOKIE_NAME = "jobtrack_session";
-const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+const REMEMBERED_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days, "stay signed in"
+const DEFAULT_SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 1 day when not "staying signed in"
 
 export interface AuthedUser {
   id: string;
@@ -32,10 +33,10 @@ export async function signup(email: string, password: string, name?: string) {
   const user = await prisma.user.create({
     data: { email, passwordHash, name },
   });
-  return createSession(user.id);
+  return createSession(user.id, true);
 }
 
-export async function login(email: string, password: string) {
+export async function login(email: string, password: string, rememberMe: boolean) {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     throw new Error("Invalid email or password.");
@@ -44,18 +45,24 @@ export async function login(email: string, password: string) {
   if (!valid) {
     throw new Error("Invalid email or password.");
   }
-  return createSession(user.id);
+  return createSession(user.id, rememberMe);
 }
 
 /** Issues a fresh opaque session token; only its SHA-256 hash is persisted, so a
- * database leak never yields usable session tokens. */
-export async function createSession(userId: string): Promise<{ token: string; expiresAt: Date }> {
+ * database leak never yields usable session tokens. `rememberMe` controls both
+ * how long the server-side session record is valid for and (in the route
+ * handlers) whether the cookie itself persists past the browser closing. */
+export async function createSession(
+  userId: string,
+  rememberMe: boolean
+): Promise<{ token: string; expiresAt: Date; rememberMe: boolean }> {
   const token = randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+  const ttl = rememberMe ? REMEMBERED_SESSION_TTL_MS : DEFAULT_SESSION_TTL_MS;
+  const expiresAt = new Date(Date.now() + ttl);
   await prisma.session.create({
     data: { userId, tokenHash: hashToken(token), expiresAt },
   });
-  return { token, expiresAt };
+  return { token, expiresAt, rememberMe };
 }
 
 export async function verifySession(token: string | undefined | null): Promise<AuthedUser | null> {

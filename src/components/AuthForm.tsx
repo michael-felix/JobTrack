@@ -16,6 +16,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -33,7 +34,9 @@ export function AuthForm({ mode }: AuthFormProps) {
       const res = await fetch(`/api/auth/${mode}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(mode === "signup" ? { email, password, name } : { email, password }),
+        body: JSON.stringify(
+          mode === "signup" ? { email, password, name } : { email, password, rememberMe }
+        ),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -91,15 +94,37 @@ export function AuthForm({ mode }: AuthFormProps) {
       {mode === "signup" && (
         <div>
           <label className="field-label">Confirm password</label>
-          <input
-            type={showPassword ? "text" : "password"}
-            required
-            minLength={8}
-            className="field-input"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
+          <div className="relative mt-1.5">
+            <input
+              type={showPassword ? "text" : "password"}
+              required
+              minLength={8}
+              className="field-input mt-0 pr-10"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              tabIndex={-1}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute inset-y-0 right-0 flex w-9 items-center justify-center text-ink-muted hover:text-ink dark:text-ink-muted-dark dark:hover:text-ink-dark"
+            >
+              {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            </button>
+          </div>
         </div>
+      )}
+      {mode === "login" && (
+        <label className="flex items-center gap-2 text-sm text-ink-muted dark:text-ink-muted-dark">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="h-4 w-4 rounded border-hairline text-accent focus:ring-accent dark:border-hairline-dark"
+          />
+          Stay signed in
+        </label>
       )}
       {error && <p className="text-sm text-stage-rejected dark:text-stage-dark-rejected">{error}</p>}
       <button type="submit" disabled={submitting} className="btn-primary w-full">

@@ -28,6 +28,15 @@ textarea {
   transition-timing-function: ease-out;
 }
 
+/* Edge/IE inject their own password-reveal and clear-field icons inside
+   password inputs, which visually overlap a custom show/hide button placed
+   at the same corner and can swallow its clicks. We render our own toggle
+   (see AuthForm), so suppress the native ones everywhere. */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

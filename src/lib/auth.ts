@@ -36,13 +36,21 @@ export async function signup(email: string, password: string, name?: string) {
   return createSession(user.id, true);
 }
 
+// A precomputed bcrypt(12) hash with no known plaintext, used only to burn
+// the same CPU time as a real password check when the account doesn't
+// exist — see the comment in login() below for why this matters.
+const DUMMY_PASSWORD_HASH = "$2a$12$cfCQmgkBCDZ3gUX2jVILZ.RAycsMSVetd3loF7PS0cHDCQnMULvbi";
+
 export async function login(email: string, password: string, rememberMe: boolean) {
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
-    throw new Error("Invalid email or password.");
-  }
-  const valid = await verifyPassword(password, user.passwordHash);
-  if (!valid) {
+  // Always run bcrypt.compare, even for a nonexistent account, against a
+  // hash of the same cost factor. Returning early for "no such user" would
+  // make that response consistently faster than a real wrong-password
+  // attempt (which pays bcrypt's ~100-300ms cost) — an identical error
+  // message doesn't hide that timing difference, so it'd still let an
+  // attacker enumerate registered emails by measuring response time.
+  const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
+  if (!user || !valid) {
     throw new Error("Invalid email or password.");
   }
   return createSession(user.id, rememberMe);

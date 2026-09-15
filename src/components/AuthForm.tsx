@@ -85,7 +85,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             onClick={() => setShowPassword((v) => !v)}
             tabIndex={-1}
             aria-label={showPassword ? "Hide password" : "Show password"}
-            className="absolute inset-y-0 right-0 flex w-9 items-center justify-center text-ink-muted hover:text-ink dark:text-ink-muted-dark dark:hover:text-ink-dark"
+            className="absolute inset-y-0 right-1 flex w-8 items-center justify-center rounded-md text-ink-muted hover:bg-accent-soft hover:text-ink dark:text-ink-muted-dark dark:hover:bg-accent-soft-dark dark:hover:text-ink-dark"
           >
             {showPassword ? <EyeOffIcon /> : <EyeIcon />}
           </button>
@@ -108,7 +108,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               onClick={() => setShowPassword((v) => !v)}
               tabIndex={-1}
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="absolute inset-y-0 right-0 flex w-9 items-center justify-center text-ink-muted hover:text-ink dark:text-ink-muted-dark dark:hover:text-ink-dark"
+              className="absolute inset-y-0 right-1 flex w-8 items-center justify-center rounded-md text-ink-muted hover:bg-accent-soft hover:text-ink dark:text-ink-muted-dark dark:hover:bg-accent-soft-dark dark:hover:text-ink-dark"
             >
               {showPassword ? <EyeOffIcon /> : <EyeIcon />}
             </button>
@@ -116,12 +116,12 @@ export function AuthForm({ mode }: AuthFormProps) {
         </div>
       )}
       {mode === "login" && (
-        <label className="flex items-center gap-2 text-sm text-ink-muted dark:text-ink-muted-dark">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-muted dark:text-ink-muted-dark">
           <input
             type="checkbox"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="h-4 w-4 rounded border-hairline text-accent focus:ring-accent dark:border-hairline-dark"
+            className="h-4 w-4 cursor-pointer rounded border-hairline accent-accent dark:border-hairline-dark dark:accent-accent-dark"
           />
           Stay signed in
         </label>

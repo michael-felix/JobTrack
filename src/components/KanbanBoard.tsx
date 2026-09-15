@@ -16,13 +16,60 @@ import {
 import { ApplicationStage, ApplicationSummary, STAGES, STAGE_LABELS } from "@/lib/types";
 import { NewApplicationModal } from "@/components/NewApplicationModal";
 
-const STAGE_DOT: Record<ApplicationStage, string> = {
-  SAVED: "bg-stage-saved dark:bg-stage-dark-saved",
-  APPLIED: "bg-stage-applied dark:bg-stage-dark-applied",
-  SCREENING: "bg-stage-screening dark:bg-stage-dark-screening",
-  INTERVIEW: "bg-stage-interview dark:bg-stage-dark-interview",
-  OFFER: "bg-stage-offer dark:bg-stage-dark-offer",
-  REJECTED: "bg-stage-rejected dark:bg-stage-dark-rejected",
+const STAGE_STYLES: Record<
+  ApplicationStage,
+  { dot: string; wash: string; border: string; cardBorder: string; text: string; avatar: string }
+> = {
+  SAVED: {
+    dot: "bg-stage-saved dark:bg-stage-dark-saved",
+    wash: "bg-stage-saved/[0.06] dark:bg-stage-dark-saved/[0.06]",
+    border: "border-stage-saved/40 dark:border-stage-dark-saved/40",
+    cardBorder: "border-l-stage-saved dark:border-l-stage-dark-saved",
+    text: "text-stage-saved dark:text-stage-dark-saved",
+    avatar: "bg-stage-saved/15 text-stage-saved dark:bg-stage-dark-saved/20 dark:text-stage-dark-saved",
+  },
+  APPLIED: {
+    dot: "bg-stage-applied dark:bg-stage-dark-applied",
+    wash: "bg-stage-applied/[0.06] dark:bg-stage-dark-applied/[0.06]",
+    border: "border-stage-applied/40 dark:border-stage-dark-applied/40",
+    cardBorder: "border-l-stage-applied dark:border-l-stage-dark-applied",
+    text: "text-stage-applied dark:text-stage-dark-applied",
+    avatar: "bg-stage-applied/15 text-stage-applied dark:bg-stage-dark-applied/20 dark:text-stage-dark-applied",
+  },
+  SCREENING: {
+    dot: "bg-stage-screening dark:bg-stage-dark-screening",
+    wash: "bg-stage-screening/[0.06] dark:bg-stage-dark-screening/[0.06]",
+    border: "border-stage-screening/40 dark:border-stage-dark-screening/40",
+    cardBorder: "border-l-stage-screening dark:border-l-stage-dark-screening",
+    text: "text-stage-screening dark:text-stage-dark-screening",
+    avatar:
+      "bg-stage-screening/15 text-stage-screening dark:bg-stage-dark-screening/20 dark:text-stage-dark-screening",
+  },
+  INTERVIEW: {
+    dot: "bg-stage-interview dark:bg-stage-dark-interview",
+    wash: "bg-stage-interview/[0.06] dark:bg-stage-dark-interview/[0.06]",
+    border: "border-stage-interview/40 dark:border-stage-dark-interview/40",
+    cardBorder: "border-l-stage-interview dark:border-l-stage-dark-interview",
+    text: "text-stage-interview dark:text-stage-dark-interview",
+    avatar:
+      "bg-stage-interview/15 text-stage-interview dark:bg-stage-dark-interview/20 dark:text-stage-dark-interview",
+  },
+  OFFER: {
+    dot: "bg-stage-offer dark:bg-stage-dark-offer",
+    wash: "bg-stage-offer/[0.06] dark:bg-stage-dark-offer/[0.06]",
+    border: "border-stage-offer/40 dark:border-stage-dark-offer/40",
+    cardBorder: "border-l-stage-offer dark:border-l-stage-dark-offer",
+    text: "text-stage-offer dark:text-stage-dark-offer",
+    avatar: "bg-stage-offer/15 text-stage-offer dark:bg-stage-dark-offer/20 dark:text-stage-dark-offer",
+  },
+  REJECTED: {
+    dot: "bg-stage-rejected dark:bg-stage-dark-rejected",
+    wash: "bg-stage-rejected/[0.06] dark:bg-stage-dark-rejected/[0.06]",
+    border: "border-stage-rejected/40 dark:border-stage-dark-rejected/40",
+    cardBorder: "border-l-stage-rejected dark:border-l-stage-dark-rejected",
+    text: "text-stage-rejected dark:text-stage-dark-rejected",
+    avatar: "bg-stage-rejected/15 text-stage-rejected dark:bg-stage-dark-rejected/20 dark:text-stage-dark-rejected",
+  },
 };
 
 export function KanbanBoard({ initialApplications }: { initialApplications: ApplicationSummary[] }) {
@@ -68,7 +115,22 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
 
   return (
     <div>
-      <div className="mb-5 flex justify-end">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2">
+          {STAGES.map((stage) => {
+            const count = applications.filter((a) => a.stage === stage).length;
+            return (
+              <span
+                key={stage}
+                className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface px-3 py-1 text-xs font-medium text-ink-muted dark:border-hairline-dark dark:bg-surface-dark dark:text-ink-muted-dark"
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${STAGE_STYLES[stage].dot}`} />
+                {STAGE_LABELS[stage]}
+                <span className={STAGE_STYLES[stage].text}>{count}</span>
+              </span>
+            );
+          })}
+        </div>
         <button onClick={() => setModalOpen(true)} className="btn-primary">
           + Add application
         </button>
@@ -105,16 +167,17 @@ function Column({
   onOpen: (id: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage });
+  const styles = STAGE_STYLES[stage];
 
   return (
     <div
       ref={setNodeRef}
-      className={`min-h-[300px] rounded-xl border border-hairline/70 bg-surface/40 p-2.5 transition-colors dark:border-hairline-dark/70 dark:bg-surface-dark/30 ${
-        isOver ? "border-accent bg-accent-soft/40 dark:border-accent-dark dark:bg-accent-soft-dark/40" : ""
+      className={`min-h-[300px] rounded-xl border border-hairline/70 p-2.5 transition-colors dark:border-hairline-dark/70 ${
+        isOver ? "border-accent bg-accent-soft/40 dark:border-accent-dark dark:bg-accent-soft-dark/40" : styles.wash
       }`}
     >
       <h2 className="mb-3 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-ink-muted dark:text-ink-muted-dark">
-        <span className={`h-1.5 w-1.5 rounded-full ${STAGE_DOT[stage]}`} />
+        <span className={`h-1.5 w-1.5 rounded-full ${styles.dot}`} />
         {STAGE_LABELS[stage]}
         <span className="text-ink-faint dark:text-ink-faint-dark">{applications.length}</span>
       </h2>
@@ -122,6 +185,14 @@ function Column({
         {applications.map((application) => (
           <Card key={application.id} application={application} onOpen={onOpen} />
         ))}
+        {applications.length === 0 && (
+          <div
+            className={`flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed py-7 text-center ${styles.border}`}
+          >
+            <span className={`text-base ${styles.text} opacity-60`}>·</span>
+            <p className="text-xs text-ink-faint dark:text-ink-faint-dark">No applications yet</p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -141,6 +212,7 @@ function Card({
   // and the overlay tracking the pointer smoothly on top of it. Leaving the
   // source in place and just dimming it is the standard DragOverlay pattern.
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: application.id });
+  const cardBorder = STAGE_STYLES[application.stage].cardBorder;
 
   return (
     <div
@@ -148,7 +220,7 @@ function Card({
       {...listeners}
       {...attributes}
       onClick={() => onOpen(application.id)}
-      className={`cursor-grab rounded-lg border border-hairline bg-surface p-3.5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md active:scale-[0.98] dark:border-hairline-dark dark:bg-surface-dark dark:hover:border-accent-dark/40 ${
+      className={`cursor-grab rounded-lg border border-hairline bg-surface p-3.5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md active:scale-[0.98] dark:border-hairline-dark dark:bg-surface-dark dark:hover:border-accent-dark/40 border-l-[3px] ${cardBorder} ${
         isDragging ? "opacity-40" : ""
       }`}
     >
@@ -158,20 +230,29 @@ function Card({
 }
 
 function CardContent({ application }: { application: ApplicationSummary }) {
+  const avatar = STAGE_STYLES[application.stage].avatar;
+
   return (
-    <div>
-      <p className="font-serif text-base italic font-medium leading-snug text-ink dark:text-ink-dark">
-        {application.company}
-      </p>
-      <p className="mt-0.5 text-sm text-ink-muted dark:text-ink-muted-dark">{application.jobTitle}</p>
-      {application.location && (
-        <p className="mt-0.5 text-xs text-ink-faint dark:text-ink-faint-dark">{application.location}</p>
-      )}
-      {application.followUpDate && (
-        <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-hover dark:bg-accent-soft-dark dark:text-accent-dark">
-          Follow up {new Date(application.followUpDate).toLocaleDateString()}
+    <div className="flex gap-2.5">
+      <div
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-serif text-sm italic font-semibold ${avatar}`}
+      >
+        {application.company.charAt(0).toUpperCase()}
+      </div>
+      <div className="min-w-0">
+        <p className="truncate font-serif text-base italic font-medium leading-snug text-ink dark:text-ink-dark">
+          {application.company}
         </p>
-      )}
+        <p className="truncate text-sm text-ink-muted dark:text-ink-muted-dark">{application.jobTitle}</p>
+        {application.location && (
+          <p className="truncate text-xs text-ink-faint dark:text-ink-faint-dark">{application.location}</p>
+        )}
+        {application.followUpDate && (
+          <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-hover dark:bg-accent-soft-dark dark:text-accent-dark">
+            Follow up {new Date(application.followUpDate).toLocaleDateString()}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

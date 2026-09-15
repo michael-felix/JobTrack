@@ -8,6 +8,14 @@
 
 body {
   @apply bg-paper font-sans text-ink dark:bg-paper-dark dark:text-ink-dark;
+  background-image: radial-gradient(rgba(42, 35, 28, 0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-image: radial-gradient(rgba(243, 234, 224, 0.06) 1px, transparent 1px);
+  }
 }
 
 a,

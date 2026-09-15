@@ -102,6 +102,8 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
             {application.company}
             {application.location ? ` · ${application.location}` : ""}
             {application.salary ? ` · ${application.salary}` : ""}
+            {" · "}
+            Submitted {new Date(application.dateCaptured).toLocaleDateString()}
           </p>
           {application.jobUrl && (
             <a
@@ -172,8 +174,17 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
 
             {application.jobDescription && <JobDescription text={application.jobDescription} />}
 
+            {application.notes && (
+              <section className="card">
+                <h2 className="mb-2 font-medium">Notes</h2>
+                <p className="whitespace-pre-wrap text-sm text-ink-muted dark:text-ink-muted-dark">
+                  {application.notes}
+                </p>
+              </section>
+            )}
+
             <section className="card">
-              <h2 className="mb-3 font-medium">Notes &amp; timeline</h2>
+              <h2 className="mb-3 font-medium">Activity timeline</h2>
               <div className="mb-3 flex gap-2">
                 <input
                   className="field-input mt-0"

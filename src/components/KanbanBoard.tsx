@@ -77,6 +77,8 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
   const [applications, setApplications] = useState(initialApplications);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [showRejected, setShowRejected] = useState(false);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   function handleDragStart(event: DragStartEvent) {
@@ -113,10 +115,20 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
 
   const activeApplication = applications.find((a) => a.id === activeId);
 
+  const query = search.trim().toLowerCase();
+  const filtered = query
+    ? applications.filter(
+        (a) => a.company.toLowerCase().includes(query) || a.jobTitle.toLowerCase().includes(query)
+      )
+    : applications;
+
+  const rejectedCount = applications.filter((a) => a.stage === "REJECTED").length;
+  const visibleStages = showRejected ? STAGES : STAGES.filter((s) => s !== "REJECTED");
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {STAGES.map((stage) => {
             const count = applications.filter((a) => a.stage === stage).length;
             return (
@@ -136,13 +148,34 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
         </button>
       </div>
 
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <input
+          className="field-input mt-0 max-w-xs"
+          placeholder="Search company or role…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        {rejectedCount > 0 && (
+          <button
+            onClick={() => setShowRejected((v) => !v)}
+            className="text-sm font-medium text-ink-muted underline-offset-2 hover:text-ink hover:underline dark:text-ink-muted-dark dark:hover:text-ink-dark"
+          >
+            {showRejected ? "Hide" : "Show"} rejected ({rejectedCount})
+          </button>
+        )}
+      </div>
+
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-          {STAGES.map((stage) => (
+        <div
+          className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 ${
+            showRejected ? "xl:grid-cols-6" : "xl:grid-cols-5"
+          }`}
+        >
+          {visibleStages.map((stage) => (
             <Column
               key={stage}
               stage={stage}
-              applications={applications.filter((a) => a.stage === stage)}
+              applications={filtered.filter((a) => a.stage === stage)}
               onOpen={(id) => router.push(`/applications/${id}`)}
             />
           ))}
@@ -172,16 +205,16 @@ function Column({
   return (
     <div
       ref={setNodeRef}
-      className={`min-h-[300px] rounded-xl border border-hairline/70 p-2.5 transition-colors dark:border-hairline-dark/70 ${
+      className={`flex min-h-[300px] max-h-[calc(100vh-260px)] flex-col rounded-xl border border-hairline/70 p-2.5 transition-colors dark:border-hairline-dark/70 ${
         isOver ? "border-accent bg-accent-soft/40 dark:border-accent-dark dark:bg-accent-soft-dark/40" : styles.wash
       }`}
     >
-      <h2 className="mb-3 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-ink-muted dark:text-ink-muted-dark">
+      <h2 className="mb-3 flex shrink-0 items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-ink-muted dark:text-ink-muted-dark">
         <span className={`h-1.5 w-1.5 rounded-full ${styles.dot}`} />
         {STAGE_LABELS[stage]}
         <span className="text-ink-faint dark:text-ink-faint-dark">{applications.length}</span>
       </h2>
-      <div className="space-y-2">
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-0.5">
         {applications.map((application) => (
           <Card key={application.id} application={application} onOpen={onOpen} />
         ))}

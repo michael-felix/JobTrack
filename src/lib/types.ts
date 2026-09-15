@@ -20,6 +20,7 @@ export interface ApplicationSummary {
   jobUrl: string | null;
   stage: ApplicationStage;
   followUpDate: string | null;
+  dateCaptured: string;
   updatedAt: string;
 }
 

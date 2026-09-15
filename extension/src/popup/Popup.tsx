@@ -106,44 +106,54 @@ export function Popup() {
   }
 
   if (loadState === "loading") {
-    return <p style={{ padding: 16 }}>Loading…</p>;
+    return (
+      <div style={{ padding: 16 }}>
+        <p className="brand">JobTrack</p>
+        <p className="status">Reading this page…</p>
+      </div>
+    );
   }
 
   if (loadState === "not-configured") {
     return (
       <div style={{ padding: 16 }}>
-        <p>Set up your JobTrack AI URL and access token first.</p>
-        <button onClick={() => chrome.runtime.openOptionsPage()}>Open settings</button>
+        <p className="brand">JobTrack</p>
+        <p className="subtitle">Set up your JobTrack AI URL and access token first.</p>
+        <button className="btn btn-primary" onClick={() => chrome.runtime.openOptionsPage()}>
+          Open settings
+        </button>
       </div>
     );
   }
 
   return (
     <div style={{ padding: 16 }}>
+      <p className="brand">JobTrack</p>
       {parseFailed && (
-        <p style={{ color: "#b45309", fontSize: 13 }}>
-          Couldn&apos;t automatically read this page — fill in the details manually below.
-        </p>
+        <p className="notice">Couldn&apos;t automatically read this page — fill in the details manually below.</p>
       )}
       <form onSubmit={handleSave}>
         <Field label="Job title" value={form.jobTitle} onChange={(v) => setForm({ ...form, jobTitle: v })} />
         <Field label="Company" value={form.company} onChange={(v) => setForm({ ...form, company: v })} />
         <Field label="Location" value={form.location} onChange={(v) => setForm({ ...form, location: v })} />
         <Field label="Salary" value={form.salary} onChange={(v) => setForm({ ...form, salary: v })} />
-        <label style={{ display: "block", fontSize: 13, marginBottom: 12 }}>
-          Job description
+        <label className="field">
+          <span className="field-label">Job description</span>
           <textarea
             rows={4}
-            style={{ display: "block", width: "100%", padding: 6, marginTop: 4 }}
             value={form.jobDescription}
             onChange={(e) => setForm({ ...form, jobDescription: e.target.value })}
           />
         </label>
-        {errorMessage && <p style={{ color: "#dc2626", fontSize: 13 }}>{errorMessage}</p>}
-        <button type="submit" disabled={saveState === "saving" || !form.jobTitle || !form.company}>
+        {errorMessage && <p className="status status-error">{errorMessage}</p>}
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={saveState === "saving" || !form.jobTitle || !form.company}
+        >
           {saveState === "saving" ? "Saving…" : "Save to JobTrack"}
         </button>
-        {saveState === "saved" && <p style={{ color: "#16a34a", fontSize: 13 }}>Saved ✓</p>}
+        {saveState === "saved" && <p className="status status-success">Saved ✓</p>}
       </form>
     </div>
   );
@@ -151,13 +161,9 @@ export function Popup() {
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <label style={{ display: "block", fontSize: 13, marginBottom: 8 }}>
-      {label}
-      <input
-        style={{ display: "block", width: "100%", padding: 6, marginTop: 4 }}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
+    <label className="field">
+      <span className="field-label">{label}</span>
+      <input value={value} onChange={(e) => onChange(e.target.value)} />
     </label>
   );
 }

@@ -1,9 +1,16 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+
+const LINKS = [
+  { href: "/board", label: "Board" },
+  { href: "/documents", label: "Résumés & Cover Letters" },
+  { href: "/settings", label: "Settings" },
+];
 
 export function NavBar({ userName }: { userName: string }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -12,27 +19,37 @@ export function NavBar({ userName }: { userName: string }) {
   }
 
   return (
-    <nav className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-3 dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex items-center gap-6">
-        <a href="/board" className="text-lg font-semibold">JobTrack AI</a>
-        <a href="/board" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
-          Board
-        </a>
-        <a href="/documents" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
-          Résumés &amp; Cover Letters
-        </a>
-        <a href="/settings" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
-          Settings
-        </a>
-      </div>
-      <div className="flex items-center gap-4">
-        <span className="text-sm text-slate-500">{userName}</span>
-        <button
-          onClick={handleLogout}
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
-        >
-          Log out
-        </button>
+    <nav className="border-b border-hairline bg-surface dark:border-hairline-dark dark:bg-surface-dark">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <div className="flex items-center gap-8">
+          <a href="/board" className="heading text-xl italic">
+            JobTrack
+          </a>
+          <div className="flex items-center gap-5">
+            {LINKS.map((link) => {
+              const active = pathname?.startsWith(link.href);
+              return (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className={`text-sm transition-colors ${
+                    active
+                      ? "font-medium text-accent dark:text-accent-dark"
+                      : "text-ink-muted hover:text-ink dark:text-ink-muted-dark dark:hover:text-ink-dark"
+                  }`}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-ink-muted dark:text-ink-muted-dark">{userName}</span>
+          <button onClick={handleLogout} className="btn-secondary py-1.5">
+            Log out
+          </button>
+        </div>
       </div>
     </nav>
   );

@@ -8,7 +8,7 @@ export default async function DocumentsPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-semibold">Résumés &amp; Cover Letters</h1>
+      <h1 className="heading mb-6 text-2xl">Résumés &amp; Cover Letters</h1>
       <DocumentsManager initialDocuments={JSON.parse(JSON.stringify(documents))} />
     </div>
   );

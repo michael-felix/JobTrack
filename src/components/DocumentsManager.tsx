@@ -85,36 +85,32 @@ export function DocumentsManager({ initialDocuments }: { initialDocuments: Docum
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+      <section className="card">
         <h2 className="mb-3 font-medium">Upload a new version</h2>
         <form onSubmit={handleUpload} className="space-y-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div>
-              <label className="block text-sm font-medium">Type</label>
-              <select
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
-                value={type}
-                onChange={(e) => setType(e.target.value as DocumentType)}
-              >
+              <label className="field-label">Type</label>
+              <select className="field-input" value={type} onChange={(e) => setType(e.target.value as DocumentType)}>
                 <option value="RESUME">Résumé</option>
                 <option value="COVER_LETTER">Cover letter</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium">Version label</label>
+              <label className="field-label">Version label</label>
               <input
                 required
                 placeholder="e.g. v3 - added AWS"
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                className="field-input"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium">Change summary</label>
+              <label className="field-label">Change summary</label>
               <input
                 placeholder="What changed?"
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                className="field-input"
                 value={changeSummary}
                 onChange={(e) => setChangeSummary(e.target.value)}
               />
@@ -123,33 +119,29 @@ export function DocumentsManager({ initialDocuments }: { initialDocuments: Docum
 
           {manualText === null ? (
             <div>
-              <label className="block text-sm font-medium">File (PDF, DOCX, or TXT)</label>
+              <label className="field-label">File (PDF, DOCX, or TXT)</label>
               <input
                 type="file"
                 accept=".pdf,.docx,.txt"
-                className="mt-1 w-full text-sm"
+                className="mt-1.5 block w-full text-sm text-ink-muted file:mr-3 file:rounded-md file:border-0 file:bg-accent-soft file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-accent-hover hover:file:bg-accent-soft/70 dark:text-ink-muted-dark dark:file:bg-accent-soft-dark dark:file:text-accent-dark"
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               />
             </div>
           ) : (
             <div>
-              <label className="block text-sm font-medium">Paste text (manual entry fallback)</label>
+              <label className="field-label">Paste text (manual entry fallback)</label>
               <textarea
                 rows={6}
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+                className="field-input"
                 value={manualText}
                 onChange={(e) => setManualText(e.target.value)}
               />
             </div>
           )}
 
-          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+          {error && <p className="text-sm text-stage-rejected dark:text-stage-dark-rejected">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={uploading}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-          >
+          <button type="submit" disabled={uploading} className="btn-primary">
             {uploading ? "Uploading…" : "Upload version"}
           </button>
         </form>
@@ -160,16 +152,12 @@ export function DocumentsManager({ initialDocuments }: { initialDocuments: Docum
         <DocumentList title="Cover letter versions" documents={coverLetters} onDelete={handleDelete} />
       </div>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+      <section className="card">
         <h2 className="mb-3 font-medium">Compare two versions</h2>
         <div className="mb-3 flex flex-wrap items-end gap-3">
           <div>
-            <label className="block text-sm font-medium">From</label>
-            <select
-              className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
-              value={fromId}
-              onChange={(e) => setFromId(e.target.value)}
-            >
+            <label className="field-label">From</label>
+            <select className="field-input" value={fromId} onChange={(e) => setFromId(e.target.value)}>
               <option value="">Select version</option>
               {documents.map((d) => (
                 <option key={d.id} value={d.id}>
@@ -179,12 +167,8 @@ export function DocumentsManager({ initialDocuments }: { initialDocuments: Docum
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium">To</label>
-            <select
-              className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
-              value={toId}
-              onChange={(e) => setToId(e.target.value)}
-            >
+            <label className="field-label">To</label>
+            <select className="field-input" value={toId} onChange={(e) => setToId(e.target.value)}>
               <option value="">Select version</option>
               {documents.map((d) => (
                 <option key={d.id} value={d.id}>
@@ -193,25 +177,21 @@ export function DocumentsManager({ initialDocuments }: { initialDocuments: Docum
               ))}
             </select>
           </div>
-          <button
-            onClick={handleCompare}
-            disabled={diffing || !fromId || !toId}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-          >
+          <button onClick={handleCompare} disabled={diffing || !fromId || !toId} className="btn-primary">
             {diffing ? "Comparing…" : "Compare"}
           </button>
         </div>
 
         {diffParts && (
-          <pre className="max-h-96 overflow-y-auto whitespace-pre-wrap rounded-md bg-slate-50 p-3 text-sm dark:bg-slate-950">
+          <pre className="max-h-96 overflow-y-auto whitespace-pre-wrap rounded-md border border-hairline bg-paper p-3 text-sm dark:border-hairline-dark dark:bg-paper-dark">
             {diffParts.map((part, i) => (
               <span
                 key={i}
                 className={
                   part.type === "added"
-                    ? "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
+                    ? "bg-stage-offer/15 text-stage-offer dark:bg-stage-dark-offer/20 dark:text-stage-dark-offer"
                     : part.type === "removed"
-                    ? "bg-red-100 text-red-800 line-through dark:bg-red-900/50 dark:text-red-300"
+                    ? "bg-stage-rejected/15 text-stage-rejected line-through dark:bg-stage-dark-rejected/20 dark:text-stage-dark-rejected"
                     : ""
                 }
               >
@@ -235,20 +215,28 @@ function DocumentList({
   onDelete: (id: string) => void;
 }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+    <section className="card">
       <h2 className="mb-3 font-medium">{title}</h2>
-      {documents.length === 0 && <p className="text-sm text-slate-400">No versions uploaded yet.</p>}
+      {documents.length === 0 && <p className="text-sm text-ink-faint dark:text-ink-faint-dark">No versions uploaded yet.</p>}
       <ul className="space-y-2">
         {documents.map((doc) => (
-          <li key={doc.id} className="flex items-start justify-between rounded-md border border-slate-100 p-2 dark:border-slate-800">
+          <li
+            key={doc.id}
+            className="flex items-start justify-between rounded-md border border-hairline p-2.5 dark:border-hairline-dark"
+          >
             <div>
               <p className="text-sm font-medium">{doc.label}</p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-ink-faint dark:text-ink-faint-dark">
                 {doc.fileName} · {new Date(doc.createdAt).toLocaleDateString()}
               </p>
-              {doc.changeSummary && <p className="text-xs text-slate-500">{doc.changeSummary}</p>}
+              {doc.changeSummary && (
+                <p className="text-xs text-ink-muted dark:text-ink-muted-dark">{doc.changeSummary}</p>
+              )}
             </div>
-            <button onClick={() => onDelete(doc.id)} className="text-xs text-red-600 hover:underline">
+            <button
+              onClick={() => onDelete(doc.id)}
+              className="text-xs font-medium text-stage-rejected hover:underline dark:text-stage-dark-rejected"
+            >
               Delete
             </button>
           </li>

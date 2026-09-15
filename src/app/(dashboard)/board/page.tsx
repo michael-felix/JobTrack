@@ -8,7 +8,7 @@ export default async function BoardPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-semibold">Application Pipeline</h1>
+      <h1 className="heading mb-6 text-2xl">Application Pipeline</h1>
       <KanbanBoard initialApplications={JSON.parse(JSON.stringify(applications))} />
     </div>
   );

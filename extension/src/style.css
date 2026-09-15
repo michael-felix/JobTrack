@@ -1,0 +1,145 @@
+:root {
+  color-scheme: light dark;
+  --paper: #faf6ef;
+  --surface: #ffffff;
+  --ink: #2a231c;
+  --ink-muted: #71624f;
+  --ink-faint: #a79a87;
+  --hairline: #e8decd;
+  --accent: #bd5b36;
+  --accent-hover: #a24827;
+  --accent-soft: #f3e2d2;
+  --danger: #a14b3f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1d1912;
+    --surface: #26201a;
+    --ink: #f3eae0;
+    --ink-muted: #bbab94;
+    --ink-faint: #8a7c68;
+    --hairline: #3b3225;
+    --accent: #e0895c;
+    --accent-hover: #ec9c71;
+    --accent-soft: #3d2a1c;
+    --danger: #d28477;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Segoe UI", Inter, sans-serif;
+  font-size: 13px;
+}
+
+.brand {
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  color: var(--ink-muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+.notice {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  margin-bottom: 14px;
+}
+
+.field {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-muted);
+  margin-bottom: 4px;
+}
+
+.field input,
+.field textarea {
+  display: block;
+  width: 100%;
+  padding: 7px 9px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.btn {
+  display: inline-block;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-link {
+  background: transparent;
+  color: var(--accent);
+  padding: 0;
+  text-decoration: underline;
+}
+
+.status {
+  margin-top: 10px;
+  font-size: 12.5px;
+  color: var(--ink-muted);
+}
+
+.status-error {
+  color: var(--danger);
+}
+
+.status-success {
+  color: var(--accent-hover);
+}

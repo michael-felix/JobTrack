@@ -8,7 +8,7 @@ export default async function SettingsPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-semibold">Settings</h1>
+      <h1 className="heading mb-6 text-2xl">Settings</h1>
       <TokensManager initialTokens={JSON.parse(JSON.stringify(tokens))} />
     </div>
   );

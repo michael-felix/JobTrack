@@ -16,13 +16,13 @@ import {
 import { ApplicationStage, ApplicationSummary, STAGES, STAGE_LABELS } from "@/lib/types";
 import { NewApplicationModal } from "@/components/NewApplicationModal";
 
-const STAGE_COLORS: Record<ApplicationStage, string> = {
-  SAVED: "border-t-slate-400",
-  APPLIED: "border-t-blue-500",
-  SCREENING: "border-t-purple-500",
-  INTERVIEW: "border-t-amber-500",
-  OFFER: "border-t-green-500",
-  REJECTED: "border-t-red-500",
+const STAGE_DOT: Record<ApplicationStage, string> = {
+  SAVED: "bg-stage-saved dark:bg-stage-dark-saved",
+  APPLIED: "bg-stage-applied dark:bg-stage-dark-applied",
+  SCREENING: "bg-stage-screening dark:bg-stage-dark-screening",
+  INTERVIEW: "bg-stage-interview dark:bg-stage-dark-interview",
+  OFFER: "bg-stage-offer dark:bg-stage-dark-offer",
+  REJECTED: "bg-stage-rejected dark:bg-stage-dark-rejected",
 };
 
 export function KanbanBoard({ initialApplications }: { initialApplications: ApplicationSummary[] }) {
@@ -68,11 +68,8 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
 
   return (
     <div>
-      <div className="mb-4 flex justify-end">
-        <button
-          onClick={() => setModalOpen(true)}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
+      <div className="mb-5 flex justify-end">
+        <button onClick={() => setModalOpen(true)} className="btn-primary">
           + Add application
         </button>
       </div>
@@ -83,7 +80,6 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
             <Column
               key={stage}
               stage={stage}
-              colorClass={STAGE_COLORS[stage]}
               applications={applications.filter((a) => a.stage === stage)}
               onOpen={(id) => router.push(`/applications/${id}`)}
             />
@@ -101,12 +97,10 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
 
 function Column({
   stage,
-  colorClass,
   applications,
   onOpen,
 }: {
   stage: ApplicationStage;
-  colorClass: string;
   applications: ApplicationSummary[];
   onOpen: (id: string) => void;
 }) {
@@ -115,16 +109,18 @@ function Column({
   return (
     <div
       ref={setNodeRef}
-      className={`min-h-[300px] rounded-lg border border-slate-200 bg-slate-100/60 p-2 dark:border-slate-800 dark:bg-slate-900/40 ${
-        isOver ? "ring-2 ring-blue-400" : ""
+      className={`min-h-[300px] rounded-xl border border-hairline/70 bg-surface/40 p-2.5 transition-colors dark:border-hairline-dark/70 dark:bg-surface-dark/30 ${
+        isOver ? "border-accent bg-accent-soft/40 dark:border-accent-dark dark:bg-accent-soft-dark/40" : ""
       }`}
     >
-      <h2 className="mb-2 px-1 text-sm font-semibold text-slate-600 dark:text-slate-300">
-        {STAGE_LABELS[stage]} <span className="text-slate-400">({applications.length})</span>
+      <h2 className="mb-3 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-wide text-ink-muted dark:text-ink-muted-dark">
+        <span className={`h-1.5 w-1.5 rounded-full ${STAGE_DOT[stage]}`} />
+        {STAGE_LABELS[stage]}
+        <span className="text-ink-faint dark:text-ink-faint-dark">{applications.length}</span>
       </h2>
       <div className="space-y-2">
         {applications.map((application) => (
-          <Card key={application.id} application={application} colorClass={colorClass} onOpen={onOpen} />
+          <Card key={application.id} application={application} onOpen={onOpen} />
         ))}
       </div>
     </div>
@@ -133,11 +129,9 @@ function Column({
 
 function Card({
   application,
-  colorClass,
   onOpen,
 }: {
   application: ApplicationSummary;
-  colorClass: string;
   onOpen: (id: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: application.id });
@@ -153,7 +147,7 @@ function Card({
       {...listeners}
       {...attributes}
       onClick={() => onOpen(application.id)}
-      className={`cursor-grab rounded-md border-t-4 bg-white p-3 shadow-sm hover:shadow dark:bg-slate-800 ${colorClass} ${
+      className={`cursor-grab rounded-lg border border-hairline bg-surface p-3.5 shadow-soft transition-shadow hover:shadow-md dark:border-hairline-dark dark:bg-surface-dark ${
         isDragging ? "opacity-40" : ""
       }`}
     >
@@ -165,12 +159,16 @@ function Card({
 function CardContent({ application }: { application: ApplicationSummary }) {
   return (
     <div>
-      <p className="font-medium">{application.jobTitle}</p>
-      <p className="text-sm text-slate-500">{application.company}</p>
-      {application.location && <p className="text-xs text-slate-400">{application.location}</p>}
+      <p className="font-serif text-[15px] font-medium leading-snug text-ink dark:text-ink-dark">
+        {application.jobTitle}
+      </p>
+      <p className="mt-0.5 text-sm text-ink-muted dark:text-ink-muted-dark">{application.company}</p>
+      {application.location && (
+        <p className="mt-0.5 text-xs text-ink-faint dark:text-ink-faint-dark">{application.location}</p>
+      )}
       {application.followUpDate && (
-        <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-          Follow up: {new Date(application.followUpDate).toLocaleDateString()}
+        <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-hover dark:bg-accent-soft-dark dark:text-accent-dark">
+          Follow up {new Date(application.followUpDate).toLocaleDateString()}
         </p>
       )}
     </div>

@@ -18,9 +18,18 @@ interface Props {
   coverLetters: DocumentVersionSummary[];
 }
 
+const TABS = [
+  { id: "overview", label: "Overview" },
+  { id: "match", label: "Match & documents" },
+  { id: "prep", label: "Interview prep" },
+] as const;
+
+type TabId = (typeof TABS)[number]["id"];
+
 export function ApplicationDetail({ application: initial, resumes, coverLetters }: Props) {
   const router = useRouter();
   const [application, setApplication] = useState(initial);
+  const [tab, setTab] = useState<TabId>("overview");
   const [noteText, setNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
 
@@ -72,11 +81,11 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
+    <div>
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">{application.jobTitle}</h1>
-          <p className="text-slate-500">
+          <h1 className="heading text-3xl">{application.jobTitle}</h1>
+          <p className="mt-1 text-ink-muted dark:text-ink-muted-dark">
             {application.company}
             {application.location ? ` · ${application.location}` : ""}
             {application.salary ? ` · ${application.salary}` : ""}
@@ -86,7 +95,7 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
               href={application.jobUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-sm text-blue-600 hover:underline"
+              className="text-sm font-medium text-accent hover:underline dark:text-accent-dark"
             >
               View original posting ↗
             </a>
@@ -96,7 +105,7 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
           <select
             value={application.stage}
             onChange={(e) => handleStageChange(e.target.value as ApplicationStage)}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input mt-0 w-auto"
           >
             {STAGES.map((stage) => (
               <option key={stage} value={stage}>
@@ -104,84 +113,106 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
               </option>
             ))}
           </select>
-          <button
-            onClick={handleDelete}
-            className="rounded-md border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950"
-          >
+          <button onClick={handleDelete} className="btn-danger">
             Delete
           </button>
         </div>
       </div>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="mb-2 font-medium">Follow-up date</h2>
-        <input
-          type="date"
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
-          value={application.followUpDate ? application.followUpDate.slice(0, 10) : ""}
-          onChange={(e) =>
-            patch({ followUpDate: e.target.value ? new Date(e.target.value).toISOString() : null })
-          }
-        />
-      </section>
+      <div className="mb-6 flex gap-1 border-b border-hairline dark:border-hairline-dark">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+              tab === t.id
+                ? "border-accent text-accent dark:border-accent-dark dark:text-accent-dark"
+                : "border-transparent text-ink-muted hover:text-ink dark:text-ink-muted-dark dark:hover:text-ink-dark"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-      {application.jobDescription && (
-        <section className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-          <h2 className="mb-2 font-medium">Job description</h2>
-          <p className="max-h-64 overflow-y-auto whitespace-pre-wrap text-sm text-slate-600 dark:text-slate-300">
-            {application.jobDescription}
-          </p>
-        </section>
+      {tab === "overview" && (
+        <div className="space-y-5">
+          <section className="card">
+            <h2 className="mb-2 font-medium">Follow-up date</h2>
+            <input
+              type="date"
+              className="field-input mt-0 w-auto"
+              value={application.followUpDate ? application.followUpDate.slice(0, 10) : ""}
+              onChange={(e) =>
+                patch({ followUpDate: e.target.value ? new Date(e.target.value).toISOString() : null })
+              }
+            />
+          </section>
+
+          {application.jobDescription && (
+            <section className="card">
+              <h2 className="mb-2 font-medium">Job description</h2>
+              <p className="max-h-64 overflow-y-auto whitespace-pre-wrap text-sm text-ink-muted dark:text-ink-muted-dark">
+                {application.jobDescription}
+              </p>
+            </section>
+          )}
+
+          <section className="card">
+            <h2 className="mb-3 font-medium">Notes &amp; timeline</h2>
+            <div className="mb-3 flex gap-2">
+              <input
+                className="field-input mt-0"
+                placeholder="Add a note…"
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddNote()}
+              />
+              <button onClick={handleAddNote} disabled={savingNote} className="btn-primary shrink-0">
+                Add
+              </button>
+            </div>
+            <ul className="space-y-2">
+              {application.events.map((event) => (
+                <li key={event.id} className="text-sm">
+                  <span className="text-ink-faint dark:text-ink-faint-dark">
+                    {new Date(event.createdAt).toLocaleString()}
+                  </span>
+                  {event.fromStage && event.fromStage !== event.toStage && (
+                    <span className="ml-2 text-ink-muted dark:text-ink-muted-dark">
+                      {STAGE_LABELS[event.fromStage]} → {STAGE_LABELS[event.toStage]}
+                    </span>
+                  )}
+                  {event.note && <span className="ml-2">{event.note}</span>}
+                </li>
+              ))}
+              {application.events.length === 0 && (
+                <p className="text-sm text-ink-faint dark:text-ink-faint-dark">No activity yet.</p>
+              )}
+            </ul>
+          </section>
+        </div>
       )}
 
-      <MatchScorePanel
-        applicationId={application.id}
-        jobDescription={application.jobDescription}
-        resumes={resumes}
-        resumeVersionId={application.resumeVersionId}
-        coverLetters={coverLetters}
-        coverLetterVersionId={application.coverLetterVersionId}
-        latestMatchScore={application.matchScores[0] ?? null}
-        onDocumentsChange={(fields) => patch(fields)}
-        onMatchScoreComputed={(matchScore) =>
-          setApplication((prev) => ({ ...prev, matchScores: [matchScore, ...prev.matchScores] }))
-        }
-      />
+      {tab === "match" && (
+        <MatchScorePanel
+          applicationId={application.id}
+          jobDescription={application.jobDescription}
+          resumes={resumes}
+          resumeVersionId={application.resumeVersionId}
+          coverLetters={coverLetters}
+          coverLetterVersionId={application.coverLetterVersionId}
+          latestMatchScore={application.matchScores[0] ?? null}
+          onDocumentsChange={(fields) => patch(fields)}
+          onMatchScoreComputed={(matchScore) =>
+            setApplication((prev) => ({ ...prev, matchScores: [matchScore, ...prev.matchScores] }))
+          }
+        />
+      )}
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="mb-2 font-medium">Notes &amp; timeline</h2>
-        <div className="mb-3 flex gap-2">
-          <input
-            className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
-            placeholder="Add a note…"
-            value={noteText}
-            onChange={(e) => setNoteText(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAddNote()}
-          />
-          <button
-            onClick={handleAddNote}
-            disabled={savingNote}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-          >
-            Add
-          </button>
-        </div>
-        <ul className="space-y-2">
-          {application.events.map((event) => (
-            <li key={event.id} className="text-sm">
-              <span className="text-slate-400">{new Date(event.createdAt).toLocaleString()}</span>
-              {event.fromStage && event.fromStage !== event.toStage && (
-                <span className="ml-2 text-slate-500">
-                  {STAGE_LABELS[event.fromStage]} → {STAGE_LABELS[event.toStage]}
-                </span>
-              )}
-              {event.note && <span className="ml-2">{event.note}</span>}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <InterviewPrepPanel applicationId={application.id} initialPrep={application.interviewPrep} />
+      {tab === "prep" && (
+        <InterviewPrepPanel applicationId={application.id} initialPrep={application.interviewPrep} />
+      )}
     </div>
   );
 }

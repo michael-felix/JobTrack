@@ -40,15 +40,18 @@ export function NewApplicationModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-lg dark:bg-slate-900">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Add job application</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/30 px-4 backdrop-blur-[2px] dark:bg-black/50">
+      <div className="w-full max-w-lg rounded-xl border border-hairline bg-surface p-6 shadow-lg dark:border-hairline-dark dark:bg-surface-dark">
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="heading text-xl">Add job application</h2>
+          <button
+            onClick={onClose}
+            className="text-ink-faint transition-colors hover:text-ink dark:text-ink-faint-dark dark:hover:text-ink-dark"
+          >
             ✕
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Job title" required value={jobTitle} onChange={setJobTitle} />
             <Field label="Company" required value={company} onChange={setCompany} />
@@ -57,27 +60,23 @@ export function NewApplicationModal({
           </div>
           <Field label="Job posting URL" value={jobUrl} onChange={setJobUrl} />
           <div>
-            <label className="block text-sm font-medium">Job description</label>
+            <label className="field-label">Job description</label>
             <textarea
               rows={5}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="field-input"
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
             />
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1.5 text-xs text-ink-faint dark:text-ink-faint-dark">
               Paste the full posting so résumé match scoring has something to compare against.
             </p>
           </div>
-          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="rounded-md px-4 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800">
+          {error && <p className="text-sm text-stage-rejected dark:text-stage-dark-rejected">{error}</p>}
+          <div className="flex justify-end gap-2 pt-1">
+            <button type="button" onClick={onClose} className="btn-secondary">
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-            >
+            <button type="submit" disabled={submitting} className="btn-primary">
               {submitting ? "Saving…" : "Save"}
             </button>
           </div>
@@ -100,13 +99,8 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium">{label}</label>
-      <input
-        required={required}
-        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      <label className="field-label">{label}</label>
+      <input required={required} className="field-input" value={value} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 }

@@ -56,15 +56,15 @@ export function InterviewPrepPanel({ applicationId, initialPrep }: Props) {
   }
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-      <h2 className="mb-3 font-medium">Interview preparation</h2>
+    <section className="card">
+      <h2 className="mb-4 font-medium">Interview preparation</h2>
 
-      <div className="space-y-4">
+      <div className="space-y-5">
         <div>
-          <label className="block text-sm font-medium">Company research</label>
+          <label className="field-label">Company research</label>
           <textarea
             rows={3}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            className="field-input"
             value={companyResearch}
             onChange={(e) => setCompanyResearch(e.target.value)}
           />
@@ -72,19 +72,19 @@ export function InterviewPrepPanel({ applicationId, initialPrep }: Props) {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium">Technical questions (one per line)</label>
+            <label className="field-label">Technical questions (one per line)</label>
             <textarea
               rows={4}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="field-input"
               value={technicalQuestions}
               onChange={(e) => setTechnicalQuestions(e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium">Behavioral questions (one per line)</label>
+            <label className="field-label">Behavioral questions (one per line)</label>
             <textarea
               rows={4}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="field-input"
               value={behavioralQuestions}
               onChange={(e) => setBehavioralQuestions(e.target.value)}
             />
@@ -92,51 +92,52 @@ export function InterviewPrepPanel({ applicationId, initialPrep }: Props) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium">Preparation checklist</label>
-          <ul className="mb-2 space-y-1">
+          <label className="field-label mb-1.5">Preparation checklist</label>
+          <ul className="mb-2 space-y-1.5">
             {checklist.map((item, i) => (
               <li key={i} className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={item.done} onChange={() => toggleChecklistItem(i)} />
-                <span className={item.done ? "text-slate-400 line-through" : ""}>{item.text}</span>
+                <input
+                  type="checkbox"
+                  checked={item.done}
+                  onChange={() => toggleChecklistItem(i)}
+                  className="h-4 w-4 rounded border-hairline text-accent focus:ring-accent dark:border-hairline-dark"
+                />
+                <span
+                  className={item.done ? "text-ink-faint line-through dark:text-ink-faint-dark" : ""}
+                >
+                  {item.text}
+                </span>
               </li>
             ))}
           </ul>
           <div className="flex gap-2">
             <input
-              className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+              className="field-input mt-0"
               placeholder="Add checklist item…"
               value={newChecklistItem}
               onChange={(e) => setNewChecklistItem(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addChecklistItem())}
             />
-            <button
-              onClick={addChecklistItem}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
-            >
+            <button onClick={addChecklistItem} className="btn-secondary shrink-0">
               Add
             </button>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium">General notes</label>
-          <textarea
-            rows={3}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
+          <label className="field-label">General notes</label>
+          <textarea rows={3} className="field-input" value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-          >
+          <button onClick={handleSave} disabled={saving} className="btn-primary">
             {saving ? "Saving…" : "Save interview prep"}
           </button>
-          {savedAt && <span className="text-xs text-slate-400">Saved {savedAt.toLocaleTimeString()}</span>}
+          {savedAt && (
+            <span className="text-xs text-ink-faint dark:text-ink-faint-dark">
+              Saved {savedAt.toLocaleTimeString()}
+            </span>
+          )}
         </div>
       </div>
     </section>

@@ -42,51 +42,49 @@ export function AuthForm({ mode }: AuthFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       {mode === "signup" && (
         <div>
-          <label className="block text-sm font-medium">Name</label>
-          <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 dark:border-slate-700 dark:bg-slate-800"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <label className="field-label">Name</label>
+          <input className="field-input" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
       )}
       <div>
-        <label className="block text-sm font-medium">Email</label>
+        <label className="field-label">Email</label>
         <input
           type="email"
           required
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 dark:border-slate-700 dark:bg-slate-800"
+          className="field-input"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
       <div>
-        <label className="block text-sm font-medium">Password</label>
+        <label className="field-label">Password</label>
         <input
           type="password"
           required
           minLength={8}
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 dark:border-slate-700 dark:bg-slate-800"
+          className="field-input"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
-      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-      <button
-        type="submit"
-        disabled={submitting}
-        className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-      >
+      {error && <p className="text-sm text-stage-rejected dark:text-stage-dark-rejected">{error}</p>}
+      <button type="submit" disabled={submitting} className="btn-primary w-full">
         {submitting ? "Please wait…" : mode === "login" ? "Log in" : "Sign up"}
       </button>
-      <p className="text-center text-sm text-slate-500">
+      <p className="text-center text-sm text-ink-muted dark:text-ink-muted-dark">
         {mode === "login" ? (
           <>
-            Need an account? <a href="/signup" className="text-blue-600 hover:underline">Sign up</a>
+            Need an account?{" "}
+            <a href="/signup" className="font-medium text-accent hover:underline dark:text-accent-dark">
+              Sign up
+            </a>
           </>
         ) : (
           <>
-            Already have an account? <a href="/login" className="text-blue-600 hover:underline">Log in</a>
+            Already have an account?{" "}
+            <a href="/login" className="font-medium text-accent hover:underline dark:text-accent-dark">
+              Log in
+            </a>
           </>
         )}
       </p>

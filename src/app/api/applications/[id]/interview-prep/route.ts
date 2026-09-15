@@ -12,21 +12,23 @@ const bodySchema = z.object({
   notes: z.string().optional(),
 });
 
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireCurrentUser();
-    const prep = await getInterviewPrep(user.id, params.id);
+    const prep = await getInterviewPrep(user.id, id);
     return NextResponse.json({ prep });
   } catch (error) {
     return errorResponse(error);
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireCurrentUser();
     const body = bodySchema.parse(await request.json());
-    const prep = await upsertInterviewPrep(user.id, params.id, body);
+    const prep = await upsertInterviewPrep(user.id, id, body);
     if (!prep) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }

@@ -6,11 +6,12 @@ import { addNote } from "@/lib/repositories/applications";
 
 const bodySchema = z.object({ note: z.string().min(1) });
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireCurrentUser();
     const body = bodySchema.parse(await request.json());
-    const event = await addNote(user.id, params.id, body.note);
+    const event = await addNote(user.id, id, body.note);
     if (!event) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }

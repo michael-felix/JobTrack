@@ -17,10 +17,11 @@ const updateSchema = z.object({
   coverLetterVersionId: z.string().optional().nullable(),
 });
 
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireCurrentUser();
-    const application = await getApplication(user.id, params.id);
+    const application = await getApplication(user.id, id);
     if (!application) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -30,11 +31,12 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireCurrentUser();
     const body = updateSchema.parse(await request.json());
-    const application = await updateApplication(user.id, params.id, {
+    const application = await updateApplication(user.id, id, {
       ...body,
       followUpDate: body.followUpDate === undefined ? undefined : body.followUpDate ? new Date(body.followUpDate) : null,
     });
@@ -47,10 +49,11 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireCurrentUser();
-    const deleted = await deleteApplication(user.id, params.id);
+    const deleted = await deleteApplication(user.id, id);
     if (!deleted) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }

@@ -4,9 +4,10 @@ import { getApplication } from "@/lib/repositories/applications";
 import { listDocumentVersions } from "@/lib/repositories/documents";
 import { ApplicationDetail } from "@/components/ApplicationDetail";
 
-export default async function ApplicationDetailPage({ params }: { params: { id: string } }) {
+export default async function ApplicationDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await getCurrentUser();
-  const application = await getApplication(user!.id, params.id);
+  const application = await getApplication(user!.id, id);
   if (!application) notFound();
 
   const [resumes, coverLetters] = await Promise.all([

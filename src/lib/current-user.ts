@@ -8,7 +8,7 @@ import { verifyApiToken } from "@/lib/api-token-auth";
  * as "unauthenticated" and respond accordingly (401 for API routes, redirect
  * for pages). */
 export async function getCurrentUser(): Promise<AuthedUser | null> {
-  const token = cookies().get(SESSION_COOKIE_NAME)?.value;
+  const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
   return verifySession(token);
 }
 

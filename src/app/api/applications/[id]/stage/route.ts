@@ -9,11 +9,12 @@ const bodySchema = z.object({
   note: z.string().optional(),
 });
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireCurrentUser();
     const body = bodySchema.parse(await request.json());
-    const application = await transitionStage(user.id, params.id, body.toStage, body.note);
+    const application = await transitionStage(user.id, id, body.toStage, body.note);
     if (!application) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }

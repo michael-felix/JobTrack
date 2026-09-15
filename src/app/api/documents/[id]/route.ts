@@ -4,10 +4,11 @@ import { errorResponse } from "@/lib/api-helpers";
 import { deleteDocumentVersion, getDocumentVersion } from "@/lib/repositories/documents";
 import { storage } from "@/lib/storage";
 
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireCurrentUser();
-    const document = await getDocumentVersion(user.id, params.id);
+    const document = await getDocumentVersion(user.id, id);
     if (!document) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -17,15 +18,16 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireCurrentUser();
-    const document = await getDocumentVersion(user.id, params.id);
+    const document = await getDocumentVersion(user.id, id);
     if (!document) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
     await storage.delete(document.storagePath);
-    await deleteDocumentVersion(user.id, params.id);
+    await deleteDocumentVersion(user.id, id);
     return NextResponse.json({ ok: true });
   } catch (error) {
     return errorResponse(error);

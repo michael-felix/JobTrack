@@ -8,22 +8,24 @@ import { computeMatchScore } from "@/lib/match-score";
 
 const bodySchema = z.object({ documentVersionId: z.string().min(1) });
 
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireCurrentUser();
-    const matchScore = await getLatestMatchScore(user.id, params.id);
+    const matchScore = await getLatestMatchScore(user.id, id);
     return NextResponse.json({ matchScore });
   } catch (error) {
     return errorResponse(error);
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireCurrentUser();
     const body = bodySchema.parse(await request.json());
 
-    const application = await getApplicationOwnedByUser(user.id, params.id);
+    const application = await getApplicationOwnedByUser(user.id, id);
     if (!application) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
@@ -40,7 +42,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     const result = computeMatchScore(document.extractedText, application.jobDescription);
-    const matchScore = await saveMatchScore(user.id, params.id, document.id, result);
+    const matchScore = await saveMatchScore(user.id, id, document.id, result);
     return NextResponse.json({ matchScore }, { status: 201 });
   } catch (error) {
     return errorResponse(error);

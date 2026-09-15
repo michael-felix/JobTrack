@@ -12,11 +12,14 @@ COPY . .
 
 EXPOSE 3000
 
-# docker-compose.yml sets NODE_ENV=development for local dev (hot-reload
-# against the bind-mounted source). Railway sets NODE_ENV=production by
-# default for every service — if it ever builds from this Dockerfile
-# instead of the Nixpacks builder pinned in railway.json (e.g. because a
-# service's builder was already locked to "Dockerfile" from before
-# railway.json existed), this still produces a real production server
-# with migrations applied, never the dev server serving unmigrated data.
-CMD sh -c 'if [ "$NODE_ENV" = "production" ]; then npm run build && npm start; else npm run dev; fi'
+# docker-compose.yml explicitly sets NODE_ENV=development for local dev
+# (hot-reload against the bind-mounted source) — that's the only case that
+# should run the dev server. Everything else, including NODE_ENV being
+# entirely unset, defaults to a real production build + migrate + start.
+# This matters because Railway only auto-sets NODE_ENV=production for its
+# own Nixpacks builder, NOT for a custom Dockerfile build — if this image
+# ever gets built by Railway directly (its builder locked to "Dockerfile"
+# from before railway.json existed, overriding it), NODE_ENV arrives unset,
+# and a check that required it to equal "production" to opt in would
+# silently fall through to the dev server serving an unmigrated database.
+CMD sh -c 'if [ "$NODE_ENV" = "development" ]; then npm run dev; else npm run build && npm start; fi'

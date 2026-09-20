@@ -243,7 +243,7 @@ function Card({
       {...listeners}
       {...attributes}
       onClick={() => onOpen(application.id)}
-      className={`cursor-grab rounded-lg border border-hairline bg-surface p-2.5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md active:scale-[0.98] dark:border-hairline-dark dark:bg-surface-dark dark:hover:border-accent-dark/40 border-l-[3px] ${CARD_ACCENT.border} ${
+      className={`cursor-grab rounded-lg border border-hairline bg-surface p-3.5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md active:scale-[0.98] dark:border-hairline-dark dark:bg-surface-dark dark:hover:border-accent-dark/40 border-l-[3px] ${CARD_ACCENT.border} ${
         isDragging ? "opacity-40" : ""
       }`}
     >
@@ -254,21 +254,22 @@ function Card({
 
 function CardContent({ application }: { application: ApplicationSummary }) {
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2.5">
       <div
-        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-serif text-xs italic font-semibold ${CARD_ACCENT.avatar}`}
+        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-serif text-sm italic font-semibold ${CARD_ACCENT.avatar}`}
       >
         {application.company.charAt(0).toUpperCase()}
       </div>
       <div className="min-w-0">
-        <p className="truncate font-serif text-sm italic font-medium leading-tight text-ink dark:text-ink-dark">
+        <p className="truncate font-serif text-base italic font-medium leading-snug text-ink dark:text-ink-dark">
           {application.company}
         </p>
-        <p className="truncate text-xs leading-tight text-ink-muted dark:text-ink-muted-dark">
-          {application.jobTitle}
-        </p>
+        <p className="truncate text-sm text-ink-muted dark:text-ink-muted-dark">{application.jobTitle}</p>
+        {application.location && (
+          <p className="truncate text-xs text-ink-faint dark:text-ink-faint-dark">{application.location}</p>
+        )}
         {application.followUpDate && (
-          <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-accent-soft px-1.5 py-0.5 text-[10px] font-medium text-accent-hover dark:bg-accent-soft-dark dark:text-accent-dark">
+          <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-hover dark:bg-accent-soft-dark dark:text-accent-dark">
             Follow up {new Date(application.followUpDate).toLocaleDateString()}
           </p>
         )}

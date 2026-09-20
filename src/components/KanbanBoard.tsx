@@ -24,41 +24,35 @@ const CARD_ACCENT = {
   avatar: "bg-accent-soft text-accent-hover dark:bg-accent-soft-dark dark:text-accent-dark",
 };
 
-const STAGE_STYLES: Record<ApplicationStage, { dot: string; wash: string; border: string; text: string }> = {
+const STAGE_STYLES: Record<ApplicationStage, { dot: string; wash: string; text: string }> = {
   SAVED: {
     dot: "bg-stage-saved dark:bg-stage-dark-saved",
     wash: "bg-stage-saved/[0.06] dark:bg-stage-dark-saved/[0.06]",
-    border: "border-stage-saved/40 dark:border-stage-dark-saved/40",
     text: "text-stage-saved dark:text-stage-dark-saved",
   },
   APPLIED: {
     dot: "bg-stage-applied dark:bg-stage-dark-applied",
     wash: "bg-stage-applied/[0.06] dark:bg-stage-dark-applied/[0.06]",
-    border: "border-stage-applied/40 dark:border-stage-dark-applied/40",
     text: "text-stage-applied dark:text-stage-dark-applied",
   },
   SCREENING: {
     dot: "bg-stage-screening dark:bg-stage-dark-screening",
     wash: "bg-stage-screening/[0.06] dark:bg-stage-dark-screening/[0.06]",
-    border: "border-stage-screening/40 dark:border-stage-dark-screening/40",
     text: "text-stage-screening dark:text-stage-dark-screening",
   },
   INTERVIEW: {
     dot: "bg-stage-interview dark:bg-stage-dark-interview",
     wash: "bg-stage-interview/[0.06] dark:bg-stage-dark-interview/[0.06]",
-    border: "border-stage-interview/40 dark:border-stage-dark-interview/40",
     text: "text-stage-interview dark:text-stage-dark-interview",
   },
   OFFER: {
     dot: "bg-stage-offer dark:bg-stage-dark-offer",
     wash: "bg-stage-offer/[0.06] dark:bg-stage-dark-offer/[0.06]",
-    border: "border-stage-offer/40 dark:border-stage-dark-offer/40",
     text: "text-stage-offer dark:text-stage-dark-offer",
   },
   REJECTED: {
     dot: "bg-stage-rejected dark:bg-stage-dark-rejected",
     wash: "bg-stage-rejected/[0.06] dark:bg-stage-dark-rejected/[0.06]",
-    border: "border-stage-rejected/40 dark:border-stage-dark-rejected/40",
     text: "text-stage-rejected dark:text-stage-dark-rejected",
   },
 };
@@ -210,9 +204,7 @@ function Column({
           <Card key={application.id} application={application} onOpen={onOpen} />
         ))}
         {applications.length === 0 && (
-          <div
-            className={`flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed py-7 text-center ${styles.border}`}
-          >
+          <div className="flex flex-col items-center justify-center gap-1 py-7 text-center">
             <span className={`text-base ${styles.text} opacity-60`}>·</span>
             <p className="text-xs text-ink-faint dark:text-ink-faint-dark">No applications yet</p>
           </div>

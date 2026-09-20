@@ -79,9 +79,44 @@ export function KanbanBoard({
   const [search, setSearch] = useState("");
   const [showRejected, setShowRejected] = useState(false);
   const [activeLabelIds, setActiveLabelIds] = useState<string[]>([]);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [applyingLabelId, setApplyingLabelId] = useState<string | null>(null);
 
   function toggleLabelFilter(id: string) {
     setActiveLabelIds((prev) => (prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id]));
+  }
+
+  function toggleSelectMode() {
+    setSelectMode((v) => !v);
+    setSelectedIds([]);
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
+  async function handleBulkApplyLabel(label: LabelData) {
+    if (selectedIds.length === 0) return;
+    setApplyingLabelId(label.id);
+    const previous = applications;
+    setApplications((apps) =>
+      apps.map((a) =>
+        selectedIds.includes(a.id) && !a.labels.some((l) => l.id === label.id)
+          ? { ...a, labels: [...a.labels, label] }
+          : a
+      )
+    );
+
+    const res = await fetch(`/api/labels/${label.id}/applications`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ applicationIds: selectedIds }),
+    });
+    if (!res.ok) {
+      setApplications(previous);
+    }
+    setApplyingLabelId(null);
   }
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
@@ -163,10 +198,57 @@ export function KanbanBoard({
             );
           })}
         </div>
-        <button onClick={() => setModalOpen(true)} className="btn-primary">
-          + Add application
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleSelectMode}
+            className={selectMode ? "btn-primary" : "btn-secondary"}
+          >
+            {selectMode ? "Done selecting" : "Select"}
+          </button>
+          <button onClick={() => setModalOpen(true)} className="btn-primary">
+            + Add application
+          </button>
+        </div>
       </div>
+
+      {selectMode && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-hairline bg-accent-soft/30 p-2.5 dark:border-hairline-dark dark:bg-accent-soft-dark/20">
+          <span className="text-sm font-medium text-ink-muted dark:text-ink-muted-dark">
+            {selectedIds.length} selected
+          </span>
+          <button
+            onClick={() => setSelectedIds(filtered.map((a) => a.id))}
+            className="text-xs font-medium text-accent hover:underline dark:text-accent-dark"
+          >
+            Select all visible ({filtered.length})
+          </button>
+          {selectedIds.length > 0 && (
+            <button
+              onClick={() => setSelectedIds([])}
+              className="text-xs font-medium text-ink-faint hover:text-ink-muted dark:text-ink-faint-dark dark:hover:text-ink-muted-dark"
+            >
+              Clear
+            </button>
+          )}
+          {selectedIds.length > 0 && labels.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-xs text-ink-faint dark:text-ink-faint-dark">Add label:</span>
+              {labels.map((label) => (
+                <button
+                  key={label.id}
+                  onClick={() => handleBulkApplyLabel(label)}
+                  disabled={applyingLabelId === label.id}
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium disabled:opacity-50"
+                  style={{ backgroundColor: `${label.color}22`, color: label.color }}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: label.color }} />
+                  {label.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <input
@@ -228,6 +310,9 @@ export function KanbanBoard({
               applications={filtered.filter((a) => a.stage === stage)}
               onOpen={(id) => router.push(`/applications/${id}`)}
               onTogglePin={handleTogglePin}
+              selectMode={selectMode}
+              selectedIds={selectedIds}
+              onToggleSelect={toggleSelect}
             />
           ))}
         </div>
@@ -246,11 +331,17 @@ function Column({
   applications,
   onOpen,
   onTogglePin,
+  selectMode,
+  selectedIds,
+  onToggleSelect,
 }: {
   stage: ApplicationStage;
   applications: ApplicationSummary[];
   onOpen: (id: string) => void;
   onTogglePin: (id: string) => void;
+  selectMode: boolean;
+  selectedIds: string[];
+  onToggleSelect: (id: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage });
   const styles = STAGE_STYLES[stage];
@@ -269,7 +360,15 @@ function Column({
       </h2>
       <div className="board-scroll min-h-0 flex-1 space-y-1.5 overflow-y-auto">
         {applications.map((application) => (
-          <Card key={application.id} application={application} onOpen={onOpen} onTogglePin={onTogglePin} />
+          <Card
+            key={application.id}
+            application={application}
+            onOpen={onOpen}
+            onTogglePin={onTogglePin}
+            selectMode={selectMode}
+            selected={selectedIds.includes(application.id)}
+            onToggleSelect={onToggleSelect}
+          />
         ))}
         {applications.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-1 py-7 text-center">
@@ -286,10 +385,16 @@ function Card({
   application,
   onOpen,
   onTogglePin,
+  selectMode,
+  selected,
+  onToggleSelect,
 }: {
   application: ApplicationSummary;
   onOpen: (id: string) => void;
   onTogglePin: (id: string) => void;
+  selectMode: boolean;
+  selected: boolean;
+  onToggleSelect: (id: string) => void;
 }) {
   // Deliberately not applying dnd-kit's `transform` here: the board already
   // renders a <DragOverlay> that follows the cursor, so also translating
@@ -297,40 +402,66 @@ function Card({
   // frame behind (it goes through a React re-render on every pointer move)
   // and the overlay tracking the pointer smoothly on top of it. Leaving the
   // source in place and just dimming it is the standard DragOverlay pattern.
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: application.id });
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: application.id,
+    disabled: selectMode,
+  });
 
   return (
     <div
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      onClick={() => onOpen(application.id)}
-      className={`group relative cursor-grab rounded-lg border border-hairline bg-surface p-3.5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md active:scale-[0.98] dark:border-hairline-dark dark:bg-surface-dark dark:hover:border-accent-dark/40 border-l-[3px] ${CARD_ACCENT.border} ${
-        isDragging ? "opacity-40" : ""
-      } ${application.pinned ? "bg-accent-soft/30 dark:bg-accent-soft-dark/30" : ""}`}
+      onClick={() => (selectMode ? onToggleSelect(application.id) : onOpen(application.id))}
+      className={`group relative rounded-lg border border-hairline bg-surface p-3.5 shadow-soft transition-all dark:border-hairline-dark dark:bg-surface-dark border-l-[3px] ${CARD_ACCENT.border} ${
+        selectMode ? "cursor-pointer" : "cursor-grab hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md active:scale-[0.98] dark:hover:border-accent-dark/40"
+      } ${isDragging ? "opacity-40" : ""} ${
+        selected
+          ? "ring-2 ring-accent dark:ring-accent-dark"
+          : application.pinned
+            ? "bg-accent-soft/30 dark:bg-accent-soft-dark/30"
+            : ""
+      }`}
     >
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onTogglePin(application.id);
-        }}
-        title={application.pinned ? "Unpin" : "Pin to top"}
-        className={`absolute right-2 top-2 rounded-md p-1 transition-opacity ${
-          application.pinned
-            ? "text-accent opacity-100 dark:text-accent-dark"
-            : "text-ink-faint opacity-0 hover:text-accent group-hover:opacity-100 dark:text-ink-faint-dark dark:hover:text-accent-dark"
-        }`}
-      >
-        <StarIcon filled={application.pinned} />
-      </button>
-      <CardContent application={application} />
+      {selectMode && (
+        <div
+          className={`absolute left-2 top-2 flex h-4 w-4 items-center justify-center rounded border ${
+            selected
+              ? "border-accent bg-accent text-white dark:border-accent-dark dark:bg-accent-dark"
+              : "border-hairline bg-surface dark:border-hairline-dark dark:bg-surface-dark"
+          }`}
+        >
+          {selected && (
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+          )}
+        </div>
+      )}
+      {!selectMode && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onTogglePin(application.id);
+          }}
+          title={application.pinned ? "Unpin" : "Pin to top"}
+          className={`absolute right-2 top-2 rounded-md p-1 transition-opacity ${
+            application.pinned
+              ? "text-accent opacity-100 dark:text-accent-dark"
+              : "text-ink-faint opacity-0 hover:text-accent group-hover:opacity-100 dark:text-ink-faint-dark dark:hover:text-accent-dark"
+          }`}
+        >
+          <StarIcon filled={application.pinned} />
+        </button>
+      )}
+      <CardContent application={application} indent={selectMode} />
     </div>
   );
 }
 
-function CardContent({ application }: { application: ApplicationSummary }) {
+function CardContent({ application, indent }: { application: ApplicationSummary; indent?: boolean }) {
   return (
-    <div className="flex gap-2.5 pr-5">
+    <div className={`flex gap-2.5 pr-5 ${indent ? "pl-5" : ""}`}>
       <div
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-serif text-sm italic font-semibold ${CARD_ACCENT.avatar}`}
       >

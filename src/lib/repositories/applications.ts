@@ -100,6 +100,24 @@ export async function updateApplication(userId: string, applicationId: string, i
   });
 }
 
+/** Adds one label to many applications at once (used by the board's bulk
+ * "add label" action) without disturbing each application's other labels.
+ * Silently ignores any id in `applicationIds` that isn't owned by `userId`,
+ * and returns how many applications were actually updated. */
+export async function bulkAddLabel(userId: string, labelId: string, applicationIds: string[]) {
+  const owned = await prisma.application.findMany({
+    where: { id: { in: applicationIds }, userId },
+    select: { id: true },
+  });
+  if (owned.length === 0) return 0;
+  await prisma.$transaction(
+    owned.map(({ id }) =>
+      prisma.application.update({ where: { id }, data: { labels: { connect: { id: labelId } } } })
+    )
+  );
+  return owned.length;
+}
+
 export async function deleteApplication(userId: string, applicationId: string) {
   const existing = await prisma.application.findFirst({ where: { id: applicationId, userId } });
   if (!existing) return false;

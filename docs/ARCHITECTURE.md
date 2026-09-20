@@ -83,18 +83,15 @@ the extension never touches the user's password or session cookie. MV3
 extension pages calling `fetch` from `optional_host_permissions` origins are
 exempt from CORS, so no server-side CORS configuration was needed for this.
 
-**Labels are one-per-application, not a many-to-many tag system.**
-`ApplicationLabel` is a plain foreign key on `Application` (`labelId`), not
-a join table. A job search realistically needs a handful of user-defined
-groupings ("Dream job", "Backup option") shown as one colored badge per
-card — supporting several simultaneous tags per application would mean a
-join table, a multi-select picker UI, and multi-badge card layouts for a
-need that hasn't come up. `labelId` is a bare foreign key with no built-in
-ownership scoping (unlike `Application`/`DocumentVersion`, which are always
-read through `src/lib/repositories/*` scoped to `userId`), so the one place
-that must check label ownership explicitly is
-`assertLabelOwnedByUser` in `src/lib/repositories/labels.ts`, called before
-any `PATCH /api/applications/:id` that sets `labelId` — otherwise a user
+**Labels are many-to-many.** `ApplicationLabel` and `Application` relate
+through Prisma's implicit join table — an application can carry several
+labels at once (e.g. "Dream job" and "Referral"), rendered as multiple
+badges on its card and filterable independently on the board. The relation
+has no built-in ownership scoping (unlike `Application`/`DocumentVersion`,
+which are always read through `src/lib/repositories/*` scoped to `userId`),
+so the one place that must check label ownership explicitly is
+`assertLabelsOwnedByUser` in `src/lib/repositories/labels.ts`, called before
+any `PATCH /api/applications/:id` that sets `labelIds` — otherwise a user
 could reference another user's label by guessing its id.
 
 ## Data model
@@ -109,7 +106,7 @@ erDiagram
     Application ||--o{ MatchScore : "scored against"
     Application ||--o| InterviewPrep : has
     Application }o--o| DocumentVersion : "resume/cover letter used"
-    Application }o--o| ApplicationLabel : "grouped by"
+    Application }o--o{ ApplicationLabel : "grouped by"
     DocumentVersion ||--o{ MatchScore : "scored"
 ```
 
@@ -118,11 +115,12 @@ erDiagram
   `/settings`)
 - `Session` — hashed opaque token, expiry; deleting a row revokes it
 - `Application` — the Kanban card: job info, `stage` enum, `pinned` (always
-  sorts first), `labelId`, `resumeVersionId` / `coverLetterVersionId`
-  pointers to the exact documents submitted
+  sorts first), `labels` (many-to-many), `resumeVersionId` /
+  `coverLetterVersionId` pointers to the exact documents submitted
 - `ApplicationEvent` — append-only timeline (stage changes + free-text notes)
 - `ApplicationLabel` — a user-defined colored label ("Dream job") for
-  visually grouping applications on the board; one per application
+  visually grouping applications on the board; an application can carry
+  several at once, and the board can filter by them
 - `DocumentVersion` — one row per uploaded résumé/cover-letter version, with
   extracted plain text for diffing/scoring
 - `MatchScore` — cached result of scoring one `DocumentVersion` against one

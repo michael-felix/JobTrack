@@ -99,8 +99,10 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters,
     await patch({ pinned: !application.pinned });
   }
 
-  async function handleLabelChange(labelId: string) {
-    await patch({ labelId: labelId || null });
+  async function handleToggleLabel(labelId: string) {
+    const current = application.labels.map((l) => l.id);
+    const next = current.includes(labelId) ? current.filter((id) => id !== labelId) : [...current, labelId];
+    await patch({ labelIds: next });
   }
 
   return (
@@ -141,21 +143,28 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters,
             {" · "}
             Submitted {new Date(application.dateCaptured).toLocaleDateString()}
           </p>
-          <div className="mt-2">
-            <select
-              value={application.label?.id ?? ""}
-              onChange={(e) => handleLabelChange(e.target.value)}
-              className="field-input mt-0 w-auto text-sm"
-              style={application.label ? { color: application.label.color } : undefined}
-            >
-              <option value="">No label</option>
-              {labels.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {labels.length > 0 && (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              {labels.map((l) => {
+                const active = application.labels.some((al) => al.id === l.id);
+                return (
+                  <button
+                    key={l.id}
+                    onClick={() => handleToggleLabel(l.id)}
+                    className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-opacity"
+                    style={
+                      active
+                        ? { backgroundColor: `${l.color}22`, color: l.color, boxShadow: `0 0 0 1px ${l.color}` }
+                        : { backgroundColor: `${l.color}22`, color: l.color, opacity: 0.45 }
+                    }
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: l.color }} />
+                    {l.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {application.jobUrl && (
             <a
               href={application.jobUrl}

@@ -40,7 +40,7 @@ export interface ApplicationSummary {
   jobUrl: string | null;
   stage: ApplicationStage;
   pinned: boolean;
-  label: LabelData | null;
+  labels: LabelData[];
   followUpDate: string | null;
   dateCaptured: string;
   updatedAt: string;

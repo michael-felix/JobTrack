@@ -48,8 +48,7 @@ model User {
 
 /// A user-defined colored label ("Dream job", "Backup option", ...) that can
 /// be attached to applications for at-a-glance visual grouping on the board.
-/// One label per application (not a many-to-many tag system) — see
-/// docs/ARCHITECTURE.md for why.
+/// Many-to-many: an application can carry several labels at once.
 model ApplicationLabel {
   id        String   @id @default(cuid())
   userId    String
@@ -105,7 +104,6 @@ model Application {
   stage                ApplicationStage @default(SAVED)
   notes                String?
   pinned               Boolean          @default(false)
-  labelId              String?
   dateCaptured         DateTime         @default(now())
   followUpDate         DateTime?
   resumeVersionId      String?
@@ -116,14 +114,13 @@ model Application {
   user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   resumeVersion DocumentVersion?   @relation("ApplicationResume", fields: [resumeVersionId], references: [id])
   coverLetter   DocumentVersion?   @relation("ApplicationCoverLetter", fields: [coverLetterVersionId], references: [id])
-  label         ApplicationLabel?  @relation(fields: [labelId], references: [id], onDelete: SetNull)
+  labels        ApplicationLabel[]
   events        ApplicationEvent[]
   matchScores   MatchScore[]
   interviewPrep InterviewPrep?
 
   @@index([userId])
   @@index([userId, stage])
-  @@index([labelId])
 }
 
 model ApplicationEvent {

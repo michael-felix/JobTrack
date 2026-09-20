@@ -33,7 +33,7 @@ export async function listApplications(userId: string, sortOrder: SortOrder) {
   return prisma.application.findMany({
     where: { userId },
     orderBy: [{ pinned: "desc" }, SORT_ORDER_CLAUSE[sortOrder]],
-    include: { resumeVersion: true, coverLetter: true, label: true },
+    include: { resumeVersion: true, coverLetter: true, labels: true },
   });
 }
 
@@ -43,7 +43,7 @@ export async function getApplication(userId: string, applicationId: string) {
     include: {
       resumeVersion: true,
       coverLetter: true,
-      label: true,
+      labels: true,
       events: { orderBy: { createdAt: "desc" } },
       matchScores: { orderBy: { createdAt: "desc" }, take: 1 },
       interviewPrep: true,
@@ -67,6 +67,7 @@ export async function createApplication(userId: string, input: CreateApplication
         create: { toStage: "SAVED", note: "Application created" },
       },
     },
+    include: { resumeVersion: true, coverLetter: true, labels: true },
   });
 }
 
@@ -82,15 +83,20 @@ export interface UpdateApplicationInput {
   resumeVersionId?: string | null;
   coverLetterVersionId?: string | null;
   pinned?: boolean;
-  labelId?: string | null;
+  labelIds?: string[];
 }
 
 export async function updateApplication(userId: string, applicationId: string, input: UpdateApplicationInput) {
   const existing = await prisma.application.findFirst({ where: { id: applicationId, userId } });
   if (!existing) return null;
+  const { labelIds, ...fields } = input;
   return prisma.application.update({
     where: { id: applicationId },
-    data: input,
+    data: {
+      ...fields,
+      labels: labelIds ? { set: labelIds.map((id) => ({ id })) } : undefined,
+    },
+    include: { resumeVersion: true, coverLetter: true, labels: true },
   });
 }
 

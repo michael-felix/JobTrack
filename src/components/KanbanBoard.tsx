@@ -13,7 +13,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { ApplicationStage, ApplicationSummary, STAGES, STAGE_LABELS } from "@/lib/types";
+import { ApplicationStage, ApplicationSummary, LabelData, STAGES, STAGE_LABELS } from "@/lib/types";
 import { NewApplicationModal } from "@/components/NewApplicationModal";
 
 // Card accent (left border + avatar) is one consistent brand color across
@@ -65,13 +65,24 @@ function withPinnedFirst(apps: ApplicationSummary[]): ApplicationSummary[] {
   return [...apps].sort((a, b) => Number(b.pinned) - Number(a.pinned));
 }
 
-export function KanbanBoard({ initialApplications }: { initialApplications: ApplicationSummary[] }) {
+export function KanbanBoard({
+  initialApplications,
+  labels,
+}: {
+  initialApplications: ApplicationSummary[];
+  labels: LabelData[];
+}) {
   const router = useRouter();
   const [applications, setApplications] = useState(initialApplications);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [showRejected, setShowRejected] = useState(false);
+  const [activeLabelIds, setActiveLabelIds] = useState<string[]>([]);
+
+  function toggleLabelFilter(id: string) {
+    setActiveLabelIds((prev) => (prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id]));
+  }
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   function handleDragStart(event: DragStartEvent) {
@@ -127,11 +138,9 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
   const activeApplication = applications.find((a) => a.id === activeId);
 
   const query = search.trim().toLowerCase();
-  const filtered = query
-    ? applications.filter(
-        (a) => a.company.toLowerCase().includes(query) || a.jobTitle.toLowerCase().includes(query)
-      )
-    : applications;
+  const filtered = applications
+    .filter((a) => !query || a.company.toLowerCase().includes(query) || a.jobTitle.toLowerCase().includes(query))
+    .filter((a) => activeLabelIds.length === 0 || a.labels.some((l) => activeLabelIds.includes(l.id)));
 
   const rejectedCount = applications.filter((a) => a.stage === "REJECTED").length;
   const visibleStages = showRejected ? STAGES : STAGES.filter((s) => s !== "REJECTED");
@@ -173,6 +182,36 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
           >
             {showRejected ? "Hide" : "Show"} rejected ({rejectedCount})
           </button>
+        )}
+        {labels.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {labels.map((label) => {
+              const active = activeLabelIds.includes(label.id);
+              return (
+                <button
+                  key={label.id}
+                  onClick={() => toggleLabelFilter(label.id)}
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-opacity"
+                  style={
+                    active
+                      ? { backgroundColor: `${label.color}22`, color: label.color, boxShadow: `0 0 0 1px ${label.color}` }
+                      : { backgroundColor: `${label.color}22`, color: label.color, opacity: 0.45 }
+                  }
+                >
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: label.color }} />
+                  {label.name}
+                </button>
+              );
+            })}
+            {activeLabelIds.length > 0 && (
+              <button
+                onClick={() => setActiveLabelIds([])}
+                className="text-xs font-medium text-ink-faint hover:text-ink-muted dark:text-ink-faint-dark dark:hover:text-ink-muted-dark"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -306,15 +345,16 @@ function CardContent({ application }: { application: ApplicationSummary }) {
           <p className="truncate text-xs text-ink-faint dark:text-ink-faint-dark">{application.location}</p>
         )}
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-          {application.label && (
+          {application.labels.map((label) => (
             <span
+              key={label.id}
               className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-              style={{ backgroundColor: `${application.label.color}22`, color: application.label.color }}
+              style={{ backgroundColor: `${label.color}22`, color: label.color }}
             >
-              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: application.label.color }} />
-              {application.label.name}
+              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: label.color }} />
+              {label.name}
             </span>
-          )}
+          ))}
           {application.followUpDate && (
             <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-hover dark:bg-accent-soft-dark dark:text-accent-dark">
               Follow up {new Date(application.followUpDate).toLocaleDateString()}

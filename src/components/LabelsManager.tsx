@@ -60,8 +60,8 @@ export function LabelsManager({ initialLabels }: { initialLabels: LabelData[] })
     <section className="card">
       <h2 className="mb-1 font-medium">Labels</h2>
       <p className="mb-3 text-sm text-ink-muted dark:text-ink-muted-dark">
-        Colored labels for grouping applications on the board — assign one from any
-        application&apos;s detail page.
+        Colored labels for grouping applications on the board — assign as many as you like
+        from any application&apos;s detail page, and filter the board by them.
       </p>
 
       <form onSubmit={handleCreate} className="mb-4 space-y-3">

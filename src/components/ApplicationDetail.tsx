@@ -128,9 +128,9 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters,
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M12 2L14 8L20 10L14.5 14L16 21L12 17.5L8 21L9.5 14L4 10L10 8L12 2Z"
+                  d="M12 2.5l2.6 5.6 6.15.66-4.6 4.2 1.28 6.04L12 15.9l-5.43 3.1 1.28-6.04-4.6-4.2 6.15-.66L12 2.5z"
                   stroke="currentColor"
-                  strokeWidth="1.6"
+                  strokeWidth="1.4"
                   strokeLinejoin="round"
                 />
               </svg>

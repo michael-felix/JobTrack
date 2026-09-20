@@ -83,6 +83,20 @@ the extension never touches the user's password or session cookie. MV3
 extension pages calling `fetch` from `optional_host_permissions` origins are
 exempt from CORS, so no server-side CORS configuration was needed for this.
 
+**Labels are one-per-application, not a many-to-many tag system.**
+`ApplicationLabel` is a plain foreign key on `Application` (`labelId`), not
+a join table. A job search realistically needs a handful of user-defined
+groupings ("Dream job", "Backup option") shown as one colored badge per
+card — supporting several simultaneous tags per application would mean a
+join table, a multi-select picker UI, and multi-badge card layouts for a
+need that hasn't come up. `labelId` is a bare foreign key with no built-in
+ownership scoping (unlike `Application`/`DocumentVersion`, which are always
+read through `src/lib/repositories/*` scoped to `userId`), so the one place
+that must check label ownership explicitly is
+`assertLabelOwnedByUser` in `src/lib/repositories/labels.ts`, called before
+any `PATCH /api/applications/:id` that sets `labelId` — otherwise a user
+could reference another user's label by guessing its id.
+
 ## Data model
 
 ```mermaid
@@ -90,18 +104,25 @@ erDiagram
     User ||--o{ Session : has
     User ||--o{ Application : owns
     User ||--o{ DocumentVersion : owns
+    User ||--o{ ApplicationLabel : defines
     Application ||--o{ ApplicationEvent : "has timeline"
     Application ||--o{ MatchScore : "scored against"
     Application ||--o| InterviewPrep : has
     Application }o--o| DocumentVersion : "resume/cover letter used"
+    Application }o--o| ApplicationLabel : "grouped by"
     DocumentVersion ||--o{ MatchScore : "scored"
 ```
 
-- `User` — email/password (bcrypt hash)
+- `User` — email/password (bcrypt hash); also holds `sortOrder`, the
+  persisted default-ordering preference for the board (changeable from
+  `/settings`)
 - `Session` — hashed opaque token, expiry; deleting a row revokes it
-- `Application` — the Kanban card: job info, `stage` enum, `resumeVersionId`
-  / `coverLetterVersionId` pointers to the exact documents submitted
+- `Application` — the Kanban card: job info, `stage` enum, `pinned` (always
+  sorts first), `labelId`, `resumeVersionId` / `coverLetterVersionId`
+  pointers to the exact documents submitted
 - `ApplicationEvent` — append-only timeline (stage changes + free-text notes)
+- `ApplicationLabel` — a user-defined colored label ("Dream job") for
+  visually grouping applications on the board; one per application
 - `DocumentVersion` — one row per uploaded résumé/cover-letter version, with
   extracted plain text for diffing/scoring
 - `MatchScore` — cached result of scoring one `DocumentVersion` against one

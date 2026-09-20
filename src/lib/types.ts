@@ -16,6 +16,21 @@ export const STAGE_LABELS: Record<ApplicationStage, string> = {
   REJECTED: "Rejected",
 };
 
+export type SortOrder = "DATE_CAPTURED_DESC" | "DATE_CAPTURED_ASC" | "UPDATED_AT_DESC" | "COMPANY_ASC";
+
+export const SORT_ORDER_LABELS: Record<SortOrder, string> = {
+  DATE_CAPTURED_DESC: "Date submitted (newest first)",
+  DATE_CAPTURED_ASC: "Date submitted (oldest first)",
+  UPDATED_AT_DESC: "Recently updated",
+  COMPANY_ASC: "Company name (A–Z)",
+};
+
+export interface LabelData {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export interface ApplicationSummary {
   id: string;
   jobTitle: string;
@@ -24,6 +39,8 @@ export interface ApplicationSummary {
   salary: string | null;
   jobUrl: string | null;
   stage: ApplicationStage;
+  pinned: boolean;
+  label: LabelData | null;
   followUpDate: string | null;
   dateCaptured: string;
   updatedAt: string;

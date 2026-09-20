@@ -1,10 +1,12 @@
 import { getCurrentUser } from "@/lib/current-user";
 import { listApplications } from "@/lib/repositories/applications";
+import { getUserSortOrder } from "@/lib/repositories/users";
 import { KanbanBoard } from "@/components/KanbanBoard";
 
 export default async function BoardPage() {
   const user = await getCurrentUser();
-  const applications = await listApplications(user!.id);
+  const sortOrder = await getUserSortOrder(user!.id);
+  const applications = await listApplications(user!.id, sortOrder);
 
   return (
     <div>

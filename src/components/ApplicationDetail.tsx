@@ -6,6 +6,7 @@ import {
   ApplicationDetailData,
   ApplicationStage,
   DocumentVersionSummary,
+  LabelData,
   STAGES,
   STAGE_LABELS,
 } from "@/lib/types";
@@ -20,6 +21,7 @@ interface Props {
   application: ApplicationDetailData;
   resumes: DocumentVersionSummary[];
   coverLetters: DocumentVersionSummary[];
+  labels: LabelData[];
 }
 
 const TABS = [
@@ -30,7 +32,7 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-export function ApplicationDetail({ application: initial, resumes, coverLetters }: Props) {
+export function ApplicationDetail({ application: initial, resumes, coverLetters, labels }: Props) {
   const router = useRouter();
   const [application, setApplication] = useState(initial);
   const [tab, setTab] = useState<TabId>("overview");
@@ -93,11 +95,45 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
     }
   }
 
+  async function handleTogglePin() {
+    await patch({ pinned: !application.pinned });
+  }
+
+  async function handleLabelChange(labelId: string) {
+    await patch({ labelId: labelId || null });
+  }
+
   return (
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="heading text-3xl">{application.jobTitle}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="heading text-3xl">{application.jobTitle}</h1>
+            <button
+              onClick={handleTogglePin}
+              title={application.pinned ? "Unpin" : "Pin to top"}
+              className={`rounded-md p-1 transition-colors ${
+                application.pinned
+                  ? "text-accent dark:text-accent-dark"
+                  : "text-ink-faint hover:text-accent dark:text-ink-faint-dark dark:hover:text-accent-dark"
+              }`}
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill={application.pinned ? "currentColor" : "none"}
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 2L14 8L20 10L14.5 14L16 21L12 17.5L8 21L9.5 14L4 10L10 8L12 2Z"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
           <p className="mt-1 text-ink-muted dark:text-ink-muted-dark">
             {application.company}
             {application.location ? ` · ${application.location}` : ""}
@@ -105,6 +141,21 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters 
             {" · "}
             Submitted {new Date(application.dateCaptured).toLocaleDateString()}
           </p>
+          <div className="mt-2">
+            <select
+              value={application.label?.id ?? ""}
+              onChange={(e) => handleLabelChange(e.target.value)}
+              className="field-input mt-0 w-auto text-sm"
+              style={application.label ? { color: application.label.color } : undefined}
+            >
+              <option value="">No label</option>
+              {labels.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
+              ))}
+            </select>
+          </div>
           {application.jobUrl && (
             <a
               href={application.jobUrl}

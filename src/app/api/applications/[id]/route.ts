@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireCurrentUser } from "@/lib/current-user";
 import { errorResponse } from "@/lib/api-helpers";
 import { deleteApplication, getApplication, updateApplication } from "@/lib/repositories/applications";
+import { assertLabelOwnedByUser } from "@/lib/repositories/labels";
 
 const updateSchema = z.object({
   jobTitle: z.string().min(1).optional(),
@@ -15,6 +16,8 @@ const updateSchema = z.object({
   followUpDate: z.string().datetime().optional().nullable(),
   resumeVersionId: z.string().optional().nullable(),
   coverLetterVersionId: z.string().optional().nullable(),
+  pinned: z.boolean().optional(),
+  labelId: z.string().optional().nullable(),
 });
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -36,6 +39,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const { id } = await params;
     const user = await requireCurrentUser();
     const body = updateSchema.parse(await request.json());
+    if (body.labelId) {
+      await assertLabelOwnedByUser(user.id, body.labelId);
+    }
     const application = await updateApplication(user.id, id, {
       ...body,
       followUpDate: body.followUpDate === undefined ? undefined : body.followUpDate ? new Date(body.followUpDate) : null,

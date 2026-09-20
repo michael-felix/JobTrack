@@ -57,6 +57,14 @@ const STAGE_STYLES: Record<ApplicationStage, { dot: string; wash: string; text: 
   },
 };
 
+/** Stable sort — keeps pinned applications first while preserving whatever
+ * secondary order the server already applied (the user's chosen sort
+ * preference), so a client-side pin toggle doesn't need to know that order
+ * itself to stay correct. */
+function withPinnedFirst(apps: ApplicationSummary[]): ApplicationSummary[] {
+  return [...apps].sort((a, b) => Number(b.pinned) - Number(a.pinned));
+}
+
 export function KanbanBoard({ initialApplications }: { initialApplications: ApplicationSummary[] }) {
   const router = useRouter();
   const [applications, setApplications] = useState(initialApplications);
@@ -96,6 +104,24 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
   function handleCreated(application: ApplicationSummary) {
     setApplications((apps) => [application, ...apps]);
     setModalOpen(false);
+  }
+
+  async function handleTogglePin(id: string) {
+    const current = applications.find((a) => a.id === id);
+    if (!current) return;
+    const previous = applications;
+    setApplications((apps) =>
+      withPinnedFirst(apps.map((a) => (a.id === id ? { ...a, pinned: !a.pinned } : a)))
+    );
+
+    const res = await fetch(`/api/applications/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pinned: !current.pinned }),
+    });
+    if (!res.ok) {
+      setApplications(previous);
+    }
   }
 
   const activeApplication = applications.find((a) => a.id === activeId);
@@ -162,6 +188,7 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
               stage={stage}
               applications={filtered.filter((a) => a.stage === stage)}
               onOpen={(id) => router.push(`/applications/${id}`)}
+              onTogglePin={handleTogglePin}
             />
           ))}
         </div>
@@ -179,10 +206,12 @@ function Column({
   stage,
   applications,
   onOpen,
+  onTogglePin,
 }: {
   stage: ApplicationStage;
   applications: ApplicationSummary[];
   onOpen: (id: string) => void;
+  onTogglePin: (id: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: stage });
   const styles = STAGE_STYLES[stage];
@@ -201,7 +230,7 @@ function Column({
       </h2>
       <div className="board-scroll min-h-0 flex-1 space-y-1.5 overflow-y-auto">
         {applications.map((application) => (
-          <Card key={application.id} application={application} onOpen={onOpen} />
+          <Card key={application.id} application={application} onOpen={onOpen} onTogglePin={onTogglePin} />
         ))}
         {applications.length === 0 && (
           <div className="flex flex-col items-center justify-center gap-1 py-7 text-center">
@@ -217,9 +246,11 @@ function Column({
 function Card({
   application,
   onOpen,
+  onTogglePin,
 }: {
   application: ApplicationSummary;
   onOpen: (id: string) => void;
+  onTogglePin: (id: string) => void;
 }) {
   // Deliberately not applying dnd-kit's `transform` here: the board already
   // renders a <DragOverlay> that follows the cursor, so also translating
@@ -235,10 +266,24 @@ function Card({
       {...listeners}
       {...attributes}
       onClick={() => onOpen(application.id)}
-      className={`cursor-grab rounded-lg border border-hairline bg-surface p-3.5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md active:scale-[0.98] dark:border-hairline-dark dark:bg-surface-dark dark:hover:border-accent-dark/40 border-l-[3px] ${CARD_ACCENT.border} ${
+      className={`group relative cursor-grab rounded-lg border border-hairline bg-surface p-3.5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-md active:scale-[0.98] dark:border-hairline-dark dark:bg-surface-dark dark:hover:border-accent-dark/40 border-l-[3px] ${CARD_ACCENT.border} ${
         isDragging ? "opacity-40" : ""
-      }`}
+      } ${application.pinned ? "bg-accent-soft/30 dark:bg-accent-soft-dark/30" : ""}`}
     >
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onTogglePin(application.id);
+        }}
+        title={application.pinned ? "Unpin" : "Pin to top"}
+        className={`absolute right-2 top-2 rounded-md p-1 transition-opacity ${
+          application.pinned
+            ? "text-accent opacity-100 dark:text-accent-dark"
+            : "text-ink-faint opacity-0 hover:text-accent group-hover:opacity-100 dark:text-ink-faint-dark dark:hover:text-accent-dark"
+        }`}
+      >
+        <StarIcon filled={application.pinned} />
+      </button>
       <CardContent application={application} />
     </div>
   );
@@ -246,7 +291,7 @@ function Card({
 
 function CardContent({ application }: { application: ApplicationSummary }) {
   return (
-    <div className="flex gap-2.5">
+    <div className="flex gap-2.5 pr-5">
       <div
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-serif text-sm italic font-semibold ${CARD_ACCENT.avatar}`}
       >
@@ -260,12 +305,36 @@ function CardContent({ application }: { application: ApplicationSummary }) {
         {application.location && (
           <p className="truncate text-xs text-ink-faint dark:text-ink-faint-dark">{application.location}</p>
         )}
-        {application.followUpDate && (
-          <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-hover dark:bg-accent-soft-dark dark:text-accent-dark">
-            Follow up {new Date(application.followUpDate).toLocaleDateString()}
-          </p>
-        )}
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+          {application.label && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+              style={{ backgroundColor: `${application.label.color}22`, color: application.label.color }}
+            >
+              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: application.label.color }} />
+              {application.label.name}
+            </span>
+          )}
+          {application.followUpDate && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-hover dark:bg-accent-soft-dark dark:text-accent-dark">
+              Follow up {new Date(application.followUpDate).toLocaleDateString()}
+            </span>
+          )}
+        </div>
       </div>
     </div>
+  );
+}
+
+function StarIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M12 2L14 8L20 10L14.5 14L16 21L12 17.5L8 21L9.5 14L4 10L10 8L12 2Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

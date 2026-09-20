@@ -34,8 +34,8 @@ runIfDb("application repository row-level isolation", () => {
     await createApplication(userA.id, { jobTitle: "A's job", company: "Acme" });
     await createApplication(userB.id, { jobTitle: "B's job", company: "Globex" });
 
-    const asA = await listApplications(userA.id);
-    const asB = await listApplications(userB.id);
+    const asA = await listApplications(userA.id, "DATE_CAPTURED_DESC");
+    const asB = await listApplications(userB.id, "DATE_CAPTURED_DESC");
 
     expect(asA.every((app) => app.userId === userA.id)).toBe(true);
     expect(asB.every((app) => app.userId === userB.id)).toBe(true);

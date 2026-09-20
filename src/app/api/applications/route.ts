@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireCurrentUser } from "@/lib/current-user";
 import { errorResponse } from "@/lib/api-helpers";
 import { createApplication, listApplications } from "@/lib/repositories/applications";
+import { getUserSortOrder } from "@/lib/repositories/users";
 
 const createSchema = z.object({
   jobTitle: z.string().min(1),
@@ -18,7 +19,8 @@ const createSchema = z.object({
 export async function GET() {
   try {
     const user = await requireCurrentUser();
-    const applications = await listApplications(user.id);
+    const sortOrder = await getUserSortOrder(user.id);
+    const applications = await listApplications(user.id, sortOrder);
     return NextResponse.json({ applications });
   } catch (error) {
     return errorResponse(error);

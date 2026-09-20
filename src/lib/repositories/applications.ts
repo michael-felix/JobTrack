@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import type { ApplicationStage } from "@prisma/client";
+import type { ApplicationStage, Prisma, SortOrder } from "@prisma/client";
 
 /**
  * All data access for Application records goes through this module. Every
@@ -20,11 +20,20 @@ export interface CreateApplicationInput {
   followUpDate?: Date | null;
 }
 
-export async function listApplications(userId: string) {
+/** Maps the user's stored sort preference to the secondary Prisma orderBy
+ * clause — pinned applications always sort first regardless of this. */
+const SORT_ORDER_CLAUSE: Record<SortOrder, Prisma.ApplicationOrderByWithRelationInput> = {
+  DATE_CAPTURED_DESC: { dateCaptured: "desc" },
+  DATE_CAPTURED_ASC: { dateCaptured: "asc" },
+  UPDATED_AT_DESC: { updatedAt: "desc" },
+  COMPANY_ASC: { company: "asc" },
+};
+
+export async function listApplications(userId: string, sortOrder: SortOrder) {
   return prisma.application.findMany({
     where: { userId },
-    orderBy: { updatedAt: "desc" },
-    include: { resumeVersion: true, coverLetter: true },
+    orderBy: [{ pinned: "desc" }, SORT_ORDER_CLAUSE[sortOrder]],
+    include: { resumeVersion: true, coverLetter: true, label: true },
   });
 }
 
@@ -34,6 +43,7 @@ export async function getApplication(userId: string, applicationId: string) {
     include: {
       resumeVersion: true,
       coverLetter: true,
+      label: true,
       events: { orderBy: { createdAt: "desc" } },
       matchScores: { orderBy: { createdAt: "desc" }, take: 1 },
       interviewPrep: true,
@@ -71,6 +81,8 @@ export interface UpdateApplicationInput {
   followUpDate?: Date | null;
   resumeVersionId?: string | null;
   coverLetterVersionId?: string | null;
+  pinned?: boolean;
+  labelId?: string | null;
 }
 
 export async function updateApplication(userId: string, applicationId: string, input: UpdateApplicationInput) {

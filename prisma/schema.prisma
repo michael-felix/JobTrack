@@ -21,17 +21,47 @@ enum DocumentType {
   COVER_LETTER
 }
 
+/// How the board orders cards within a column by default. Stored per-user
+/// (not per-board-load) since the user asked for this to be a persistent
+/// setting, changeable from /settings — not just a client-side sort toggle.
+enum SortOrder {
+  DATE_CAPTURED_DESC
+  DATE_CAPTURED_ASC
+  UPDATED_AT_DESC
+  COMPANY_ASC
+}
+
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  email        String    @unique
   passwordHash String
   name         String?
-  createdAt    DateTime @default(now())
+  sortOrder    SortOrder @default(DATE_CAPTURED_DESC)
+  createdAt    DateTime  @default(now())
 
   sessions     Session[]
   applications Application[]
   documents    DocumentVersion[]
   apiTokens    ApiToken[]
+  labels       ApplicationLabel[]
+}
+
+/// A user-defined colored label ("Dream job", "Backup option", ...) that can
+/// be attached to applications for at-a-glance visual grouping on the board.
+/// One label per application (not a many-to-many tag system) — see
+/// docs/ARCHITECTURE.md for why.
+model ApplicationLabel {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  color     String
+  createdAt DateTime @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applications Application[]
+
+  @@unique([userId, name])
+  @@index([userId])
 }
 
 model Session {
@@ -74,6 +104,8 @@ model Application {
   jobDescription       String?
   stage                ApplicationStage @default(SAVED)
   notes                String?
+  pinned               Boolean          @default(false)
+  labelId              String?
   dateCaptured         DateTime         @default(now())
   followUpDate         DateTime?
   resumeVersionId      String?
@@ -84,12 +116,14 @@ model Application {
   user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   resumeVersion DocumentVersion?   @relation("ApplicationResume", fields: [resumeVersionId], references: [id])
   coverLetter   DocumentVersion?   @relation("ApplicationCoverLetter", fields: [coverLetterVersionId], references: [id])
+  label         ApplicationLabel?  @relation(fields: [labelId], references: [id], onDelete: SetNull)
   events        ApplicationEvent[]
   matchScores   MatchScore[]
   interviewPrep InterviewPrep?
 
   @@index([userId])
   @@index([userId, stage])
+  @@index([labelId])
 }
 
 model ApplicationEvent {

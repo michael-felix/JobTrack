@@ -158,7 +158,7 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
 
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div
-          className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 ${
+          className={`grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3 ${
             showRejected ? "xl:grid-cols-5" : "xl:grid-cols-4"
           }`}
         >
@@ -196,7 +196,7 @@ function Column({
   return (
     <div
       ref={setNodeRef}
-      className={`flex min-h-[300px] max-h-[calc(100vh-260px)] flex-col rounded-xl border border-hairline/70 p-2.5 transition-colors dark:border-hairline-dark/70 ${
+      className={`flex min-h-[140px] max-h-[calc(100dvh-320px)] flex-col rounded-xl border border-hairline/70 p-2.5 transition-colors dark:border-hairline-dark/70 ${
         isOver ? "border-accent bg-accent-soft/40 dark:border-accent-dark dark:bg-accent-soft-dark/40" : styles.wash
       }`}
     >

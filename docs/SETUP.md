@@ -65,3 +65,21 @@ See `.env.example` for the full list. `SESSION_SECRET` isn't currently used
 to sign anything (sessions are opaque random tokens, not JWTs) but is kept as
 a placeholder for a future move to signed cookies; set it to a random value
 in any non-local environment regardless.
+
+## Deployment (Railway)
+
+1. Create a Railway project from this repo (or `railway up` from the CLI),
+   plus a Postgres plugin in the same project.
+2. On the app service, set:
+   - `DATABASE_URL` — reference the Postgres plugin's connection variable.
+   - `SESSION_SECRET` — a random value, e.g. `openssl rand -base64 32`.
+   - `UPLOAD_DIR` — e.g. `/app/uploads`.
+3. Attach a **Volume** to the app service mounted at that same `UPLOAD_DIR`
+   path, so uploaded résumés/cover letters survive redeploys.
+4. Deploy. `package.json`'s `start` script runs `prisma migrate deploy`
+   before `next start`, so the schema is applied automatically on every
+   boot — no manual migration step.
+
+Railway gives the app a public `*.up.railway.app` HTTPS URL automatically;
+point the Chrome extension's "JobTrack AI URL" setting at that instead of
+`localhost` so captures work without your machine or Docker running.

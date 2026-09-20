@@ -127,12 +127,25 @@ The data model already has the hooks these need (e.g. `Application.jobUrl`,
 `dateCaptured` for extension capture; `MatchScore` history for insight
 mining) without redesigning the core schema when they're built.
 
-## Known accepted risk
+## Deployment: the Dockerfile defaults to production
 
-`npm audit` flags Next.js 14.2.x and its `postcss` transitive dependency at
-"high" severity; the only available fix is Next.js 16 (a major upgrade
-requiring a React 19 migration), which is out of scope for this milestone.
-The flagged CVEs (image-optimizer DoS, middleware/i18n edge cases, Server
-Actions on custom servers) don't apply to this app's current surface (no
-`next/image` remote patterns, no middleware, no i18n, no custom server). This
-should be revisited before any internet-facing deployment.
+`Dockerfile` is written for local `docker-compose` use (bind-mounted source,
+hot reload) but is also what some hosts (Railway included) will build
+directly if they detect it instead of using their own Node buildpack. Its
+`CMD` branches on `NODE_ENV`: only `NODE_ENV=development` (what
+`docker-compose.yml` sets explicitly) runs `next dev`; everything else,
+**including `NODE_ENV` being unset**, runs a real `npm run build && npm
+start`. This is deliberately the safer default — a host that builds from
+this Dockerfile without setting `NODE_ENV` at all (some don't, unlike their
+own buildpacks which typically default it to `production`) still gets a
+migrated, production Next.js server, never the dev server serving against an
+unmigrated database.
+
+## Resolved: Next.js CVE exposure
+
+An earlier version of this app ran Next.js 14.2.x, which `npm audit` flagged
+at "high"/"critical" severity for several CVEs (unauthenticated RCE on
+Windows-hosted servers, image-optimizer DoS, middleware/i18n edge cases).
+The app has since been upgraded to Next.js 16 (with the required React 19
+migration — `params`/`cookies()` are now async throughout), which is past
+the vulnerable range. No further action needed here.

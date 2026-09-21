@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { GlobalSearch } from "@/components/GlobalSearch";
 
 const LINKS = [
   { href: "/board", label: "Board" },
@@ -21,7 +22,7 @@ export function NavBar({ userName }: { userName: string }) {
 
   return (
     <nav className="border-b border-hairline bg-surface dark:border-hairline-dark dark:bg-surface-dark">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
         <div className="flex items-center gap-8">
           <Link href="/board" className="heading text-xl italic transition-opacity hover:opacity-80">
             JobTrack
@@ -49,6 +50,9 @@ export function NavBar({ userName }: { userName: string }) {
               );
             })}
           </div>
+        </div>
+        <div className="hidden flex-1 justify-center sm:flex">
+          <GlobalSearch />
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-ink-muted dark:text-ink-muted-dark">{userName}</span>

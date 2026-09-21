@@ -15,6 +15,7 @@ import {
 } from "@dnd-kit/core";
 import { ApplicationStage, ApplicationSummary, LabelData, STAGES, STAGE_LABELS } from "@/lib/types";
 import { NewApplicationModal } from "@/components/NewApplicationModal";
+import { daysSince, isFollowUpOverdue, isStale } from "@/lib/staleness";
 
 // Card accent (left border + avatar) is one consistent brand color across
 // every stage now, rather than a different color per stage — the column
@@ -78,6 +79,7 @@ export function KanbanBoard({
   const [modalOpen, setModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [showRejected, setShowRejected] = useState(false);
+  const [attentionOnly, setAttentionOnly] = useState(false);
   const [activeLabelIds, setActiveLabelIds] = useState<string[]>([]);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -175,9 +177,11 @@ export function KanbanBoard({
   const query = search.trim().toLowerCase();
   const filtered = applications
     .filter((a) => !query || a.company.toLowerCase().includes(query) || a.jobTitle.toLowerCase().includes(query))
-    .filter((a) => activeLabelIds.length === 0 || a.labels.some((l) => activeLabelIds.includes(l.id)));
+    .filter((a) => activeLabelIds.length === 0 || a.labels.some((l) => activeLabelIds.includes(l.id)))
+    .filter((a) => !attentionOnly || isStale(a) || isFollowUpOverdue(a));
 
   const rejectedCount = applications.filter((a) => a.stage === "REJECTED").length;
+  const attentionCount = applications.filter((a) => isStale(a) || isFollowUpOverdue(a)).length;
   const visibleStages = showRejected ? STAGES : STAGES.filter((s) => s !== "REJECTED");
 
   return (
@@ -263,6 +267,18 @@ export function KanbanBoard({
             className="text-sm font-medium text-ink-muted underline-offset-2 hover:text-ink hover:underline dark:text-ink-muted-dark dark:hover:text-ink-dark"
           >
             {showRejected ? "Hide" : "Show"} rejected ({rejectedCount})
+          </button>
+        )}
+        {attentionCount > 0 && (
+          <button
+            onClick={() => setAttentionOnly((v) => !v)}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              attentionOnly
+                ? "border-stage-applied bg-stage-applied/10 text-stage-applied dark:border-stage-dark-applied dark:bg-stage-dark-applied/10 dark:text-stage-dark-applied"
+                : "border-hairline text-ink-muted hover:text-ink dark:border-hairline-dark dark:text-ink-muted-dark dark:hover:text-ink-dark"
+            }`}
+          >
+            Needs attention ({attentionCount})
           </button>
         )}
         {labels.length > 0 && (
@@ -497,8 +513,20 @@ function CardContent({
             </span>
           ))}
           {application.followUpDate && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-hover dark:bg-accent-soft-dark dark:text-accent-dark">
-              Follow up {new Date(application.followUpDate).toLocaleDateString()}
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                isFollowUpOverdue(application)
+                  ? "bg-stage-rejected/10 text-stage-rejected dark:bg-stage-dark-rejected/10 dark:text-stage-dark-rejected"
+                  : "bg-accent-soft text-accent-hover dark:bg-accent-soft-dark dark:text-accent-dark"
+              }`}
+            >
+              {isFollowUpOverdue(application) ? "Overdue" : "Follow up"}{" "}
+              {new Date(application.followUpDate).toLocaleDateString()}
+            </span>
+          )}
+          {isStale(application) && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-stage-applied/10 px-2 py-0.5 text-xs font-medium text-stage-applied dark:bg-stage-dark-applied/10 dark:text-stage-dark-applied">
+              No update in {daysSince(application.updatedAt)}d
             </span>
           )}
         </div>

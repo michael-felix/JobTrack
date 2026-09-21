@@ -11,6 +11,7 @@ import {
   STAGE_LABELS,
 } from "@/lib/types";
 import { cleanMultilineText } from "@/lib/format-text";
+import { daysSince, suggestsRejection } from "@/lib/staleness";
 import { MatchScorePanel } from "@/components/MatchScorePanel";
 import { InterviewPrepPanel } from "@/components/InterviewPrepPanel";
 import { Spinner } from "@/components/Spinner";
@@ -40,6 +41,7 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters,
   const [savingNote, setSavingNote] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [changingStage, setChangingStage] = useState(false);
+  const [staleBannerDismissed, setStaleBannerDismissed] = useState(false);
 
   async function patch(fields: Record<string, unknown>) {
     const res = await fetch(`/api/applications/${application.id}`, {
@@ -107,6 +109,25 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters,
 
   return (
     <div>
+      {!staleBannerDismissed && suggestsRejection(application) && (
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stage-applied/40 bg-stage-applied/10 px-4 py-3 text-sm dark:border-stage-dark-applied/40 dark:bg-stage-dark-applied/10">
+          <span className="text-stage-applied dark:text-stage-dark-applied">
+            No update in {daysSince(application.updatedAt)} days — this one may have gone quiet.
+          </span>
+          <div className="flex shrink-0 items-center gap-3">
+            <button onClick={() => handleStageChange("REJECTED")} className="btn-secondary py-1 text-xs">
+              Mark as rejected
+            </button>
+            <button
+              onClick={() => setStaleBannerDismissed(true)}
+              className="text-xs font-medium text-ink-faint hover:text-ink-muted dark:text-ink-faint-dark dark:hover:text-ink-muted-dark"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-2">

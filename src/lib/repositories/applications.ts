@@ -51,6 +51,27 @@ export async function getApplication(userId: string, applicationId: string) {
   });
 }
 
+/** Global search across the fields a spreadsheet's find-in-sheet can't
+ * usefully cover at once — company, title, and the free-text notes and job
+ * description. Used by the nav bar's search box, not the board's quick
+ * company/role filter (which only needs the already-loaded summaries). */
+export async function searchApplications(userId: string, query: string) {
+  return prisma.application.findMany({
+    where: {
+      userId,
+      OR: [
+        { company: { contains: query, mode: "insensitive" } },
+        { jobTitle: { contains: query, mode: "insensitive" } },
+        { notes: { contains: query, mode: "insensitive" } },
+        { jobDescription: { contains: query, mode: "insensitive" } },
+      ],
+    },
+    select: { id: true, company: true, jobTitle: true, stage: true, updatedAt: true },
+    orderBy: { updatedAt: "desc" },
+    take: 15,
+  });
+}
+
 export async function createApplication(userId: string, input: CreateApplicationInput) {
   return prisma.application.create({
     data: {

@@ -107,6 +107,28 @@ so the one place that must check label ownership explicitly is
 any `PATCH /api/applications/:id` that sets `labelIds` — otherwise a user
 could reference another user's label by guessing its id.
 
+**Gmail integration is on-demand only — no background polling, no queue.**
+`src/lib/gmail.ts` and `/api/gmail/*` implement Phase 1 of "detect rejections
+from email": the user clicks "Check inbox" on the board, which searches
+Gmail for messages that look like rejections and matches them to open
+applications by a plain company-name substring check. There is no cron job
+or persistent poller — the always-on Railway process was available for one,
+but a background job would also need to track which message ids have
+already been suggested/dismissed, which is real state for a feature that
+hasn't yet proven itself worth automating. Matching is deliberately dumb
+(company name in the from/subject/snippet) rather than clever, because
+every match is only ever a *suggestion* the user approves or ignores — see
+`suggestsRejection` for the analogous "never silently mutate" pattern
+already used for stale applications. `gmail.readonly` is a Google
+"restricted" scope; publishing it for public use requires a CASA security
+assessment, so the OAuth client stays in Testing status with the user's own
+account whitelisted as a test user, which is fully functional but shows an
+"unverified app" warning during consent — expected, not a bug. The refresh
+token is the one secret in this app that must be decryptable again (unlike
+`Session`/`ApiToken`, which only ever store a one-way hash), so
+`GmailConnection.refreshTokenEncrypted` is AES-256-GCM encrypted with
+`ENCRYPTION_KEY` (`src/lib/crypto.ts`) rather than hashed.
+
 ## Data model
 
 ```mermaid
@@ -121,6 +143,7 @@ erDiagram
     Application }o--o| DocumentVersion : "resume/cover letter used"
     Application }o--o{ ApplicationLabel : "grouped by"
     DocumentVersion ||--o{ MatchScore : "scored"
+    User ||--o| GmailConnection : "connects (optional)"
 ```
 
 - `User` — email/password (bcrypt hash); also holds `sortOrder`, the
@@ -142,12 +165,16 @@ erDiagram
   question lists, checklist, notes
 - `ApiToken` — hashed personal access token for the Chrome extension; scoped
   to the narrow `/api/extension/*` surface only
+- `GmailConnection` — at most one per user; encrypted OAuth refresh token
+  for the on-demand "check inbox for rejections" board feature
 
 ## Deferred scope
 
 Not built yet (each is a substantial system on its own):
 
-- **Gmail integration** (read-only, auto stage updates from interview/rejection emails)
+- **Gmail background sync** — Phase 1 (on-demand "Check inbox" button) is
+  built; automatic passive monitoring would need a poller and a way to
+  track already-seen message ids, deferred until Phase 1 proves useful
 - **Google Calendar sync** for interviews
 - **Notion export**
 - **Weekly digest email**

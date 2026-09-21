@@ -16,6 +16,7 @@ import {
 import { ApplicationStage, ApplicationSummary, LabelData, STAGES, STAGE_LABELS } from "@/lib/types";
 import { NewApplicationModal } from "@/components/NewApplicationModal";
 import { daysSince, isFollowUpOverdue, isStale } from "@/lib/staleness";
+import { GmailCheckModal } from "@/components/GmailCheckModal";
 
 // Card accent (left border + avatar) is one consistent brand color across
 // every stage now, rather than a different color per stage — the column
@@ -69,9 +70,11 @@ function withPinnedFirst(apps: ApplicationSummary[]): ApplicationSummary[] {
 export function KanbanBoard({
   initialApplications,
   labels,
+  gmailConnected,
 }: {
   initialApplications: ApplicationSummary[];
   labels: LabelData[];
+  gmailConnected: boolean;
 }) {
   const router = useRouter();
   const [applications, setApplications] = useState(initialApplications);
@@ -84,6 +87,7 @@ export function KanbanBoard({
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [applyingLabelId, setApplyingLabelId] = useState<string | null>(null);
+  const [gmailModalOpen, setGmailModalOpen] = useState(false);
 
   function toggleLabelFilter(id: string) {
     setActiveLabelIds((prev) => (prev.includes(id) ? prev.filter((l) => l !== id) : [...prev, id]));
@@ -203,6 +207,11 @@ export function KanbanBoard({
           })}
         </div>
         <div className="flex items-center gap-2">
+          {gmailConnected && (
+            <button onClick={() => setGmailModalOpen(true)} className="btn-secondary">
+              Check inbox
+            </button>
+          )}
           <button
             onClick={toggleSelectMode}
             className={selectMode ? "btn-primary" : "btn-secondary"}
@@ -338,6 +347,14 @@ export function KanbanBoard({
       </DndContext>
 
       {modalOpen && <NewApplicationModal onClose={() => setModalOpen(false)} onCreated={handleCreated} />}
+      {gmailModalOpen && (
+        <GmailCheckModal
+          onClose={() => setGmailModalOpen(false)}
+          onMarkedRejected={(id) =>
+            setApplications((apps) => apps.map((a) => (a.id === id ? { ...a, stage: "REJECTED" } : a)))
+          }
+        />
+      )}
     </div>
   );
 }

@@ -39,11 +39,27 @@ model User {
   sortOrder    SortOrder @default(DATE_CAPTURED_DESC)
   createdAt    DateTime  @default(now())
 
-  sessions     Session[]
-  applications Application[]
-  documents    DocumentVersion[]
-  apiTokens    ApiToken[]
-  labels       ApplicationLabel[]
+  sessions        Session[]
+  applications    Application[]
+  documents       DocumentVersion[]
+  apiTokens       ApiToken[]
+  labels          ApplicationLabel[]
+  gmailConnection GmailConnection?
+}
+
+/// One Gmail account connected for the "check inbox for rejections" board
+/// feature (Phase 1: on-demand only, no background polling). The refresh
+/// token is encrypted at rest (see src/lib/crypto.ts) because — unlike
+/// Session/ApiToken, which only ever store a hash — this one has to be
+/// decrypted again to call the Gmail API on the user's behalf.
+model GmailConnection {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  email                 String
+  refreshTokenEncrypted String
+  createdAt             DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 /// A user-defined colored label ("Dream job", "Backup option", ...) that can

@@ -1,5 +1,11 @@
+// "native" covers local dev (Windows/Mac); the two linux-musl variants
+// cover Railway's Alpine-based build image, which has changed which OpenSSL
+// build it reports between deploys (linux-musl vs linux-musl-openssl-3.0.x)
+// — listing both means a Railway image change doesn't silently break the
+// Prisma Client the next time this app rebuilds.
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {

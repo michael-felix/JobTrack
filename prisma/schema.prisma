@@ -1,11 +1,14 @@
-// "native" covers local dev (Windows/Mac); the two linux-musl variants
-// cover Railway's Alpine-based build image, which has changed which OpenSSL
-// build it reports between deploys (linux-musl vs linux-musl-openssl-3.0.x)
-// — listing both means a Railway image change doesn't silently break the
-// Prisma Client the next time this app rebuilds.
+// "native" covers local dev (Windows/Mac). "linux-musl-openssl-3.0.x"
+// covers the Dockerfile's node:20-alpine image, which ships OpenSSL 3.x
+// only — deliberately NOT also listing the ambiguous "linux-musl" target:
+// when both are present, Prisma's runtime OpenSSL auto-detection can fail
+// inside this container and silently fall back to the OpenSSL-1.1-linked
+// "linux-musl" engine, which then can't find libssl.so.1.1 and crashes on
+// every request. Listing only the one matching variant removes the wrong
+// choice entirely instead of trying to make detection more reliable.
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl", "linux-musl-openssl-3.0.x"]
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {

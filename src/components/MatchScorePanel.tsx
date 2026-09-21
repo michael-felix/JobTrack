@@ -1,11 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { DocumentVersionSummary, MatchScoreData } from "@/lib/types";
 import { Spinner } from "@/components/Spinner";
+import { DocumentGenerator } from "@/components/DocumentGenerator";
 
 interface Props {
   applicationId: string;
+  company: string;
+  jobTitle: string;
   jobDescription: string | null;
   resumes: DocumentVersionSummary[];
   resumeVersionId: string | null;
@@ -18,6 +22,8 @@ interface Props {
 
 export function MatchScorePanel({
   applicationId,
+  company,
+  jobTitle,
   jobDescription,
   resumes,
   resumeVersionId,
@@ -27,6 +33,7 @@ export function MatchScorePanel({
   onDocumentsChange,
   onMatchScoreComputed,
 }: Props) {
+  const router = useRouter();
   const [computing, setComputing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,6 +56,11 @@ export function MatchScorePanel({
       setError(data.error ?? "Failed to compute match score.");
     }
     setComputing(false);
+  }
+
+  function handleDocumentSaved(field: "resumeVersionId" | "coverLetterVersionId", documentVersionId: string) {
+    onDocumentsChange({ [field]: documentVersionId });
+    router.refresh();
   }
 
   return (
@@ -114,6 +126,31 @@ export function MatchScorePanel({
           <KeywordList title="Strengths (matched skills)" items={latestMatchScore.strengths} tone="good" />
           <KeywordList title="Missing skills" items={latestMatchScore.missingSkills} tone="bad" />
           <KeywordList title="Missing keywords" items={latestMatchScore.missingKeywords} tone="neutral" />
+        </div>
+      )}
+
+      {jobDescription && (resumes.length > 0 || coverLetters.length > 0) && (
+        <div className="mt-5 space-y-4">
+          {resumes.length > 0 && (
+            <DocumentGenerator
+              applicationId={applicationId}
+              type="RESUME"
+              baseDocumentVersionId={resumeVersionId}
+              company={company}
+              jobTitle={jobTitle}
+              onSaved={(id) => handleDocumentSaved("resumeVersionId", id)}
+            />
+          )}
+          {coverLetters.length > 0 && (
+            <DocumentGenerator
+              applicationId={applicationId}
+              type="COVER_LETTER"
+              baseDocumentVersionId={coverLetterVersionId}
+              company={company}
+              jobTitle={jobTitle}
+              onSaved={(id) => handleDocumentSaved("coverLetterVersionId", id)}
+            />
+          )}
         </div>
       )}
     </section>

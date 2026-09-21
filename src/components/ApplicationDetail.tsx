@@ -307,6 +307,8 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters,
         {tab === "match" && (
           <MatchScorePanel
             applicationId={application.id}
+            company={application.company}
+            jobTitle={application.jobTitle}
             jobDescription={application.jobDescription}
             resumes={resumes}
             resumeVersionId={application.resumeVersionId}

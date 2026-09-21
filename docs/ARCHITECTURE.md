@@ -71,6 +71,19 @@ non-dictionary keywords from the job description. The score is
 instant, and unit-testable — and the dictionary is the obvious extension
 point for "add a new technology."
 
+**Résumé/cover-letter generation is the one deliberate LLM call in the app,
+and it's opt-in per click.** `src/lib/document-generation.ts` calls the
+Anthropic API (`ANTHROPIC_API_KEY`) to tailor a candidate's existing base
+document to a specific job description. It's a separate, narrow exception
+to "match scoring is deterministic" above — generation is inherently a
+rewriting task, not a scoring one. The system prompt is deliberately strict
+about only reorganizing content that already exists in the candidate's
+document, never inventing employers/skills/achievements, and the API route
+(`/api/applications/:id/generate-document`) never writes a `DocumentVersion`
+itself — it only returns draft text for the user to review and explicitly
+save through the existing manual-entry upload path. Unset the env var and
+the feature just reports itself as unconfigured; nothing else depends on it.
+
 **The Chrome extension authenticates with a personal access token, not the
 session cookie.** `ApiToken` is a second, narrower credential type (hashed
 the same way as `Session`) that only the `/api/extension/*` routes accept

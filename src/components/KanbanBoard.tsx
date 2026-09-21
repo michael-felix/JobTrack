@@ -423,21 +423,6 @@ function Card({
             : ""
       }`}
     >
-      {selectMode && (
-        <div
-          className={`absolute left-2 top-2 flex h-4 w-4 items-center justify-center rounded border ${
-            selected
-              ? "border-accent bg-accent text-white dark:border-accent-dark dark:bg-accent-dark"
-              : "border-hairline bg-surface dark:border-hairline-dark dark:bg-surface-dark"
-          }`}
-        >
-          {selected && (
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 6L9 17l-5-5" />
-            </svg>
-          )}
-        </div>
-      )}
       {!selectMode && (
         <button
           onClick={(e) => {
@@ -454,14 +439,39 @@ function Card({
           <StarIcon filled={application.pinned} />
         </button>
       )}
-      <CardContent application={application} indent={selectMode} />
+      <CardContent application={application} selectMode={selectMode} selected={selected} />
     </div>
   );
 }
 
-function CardContent({ application, indent }: { application: ApplicationSummary; indent?: boolean }) {
+function CardContent({
+  application,
+  selectMode,
+  selected,
+}: {
+  application: ApplicationSummary;
+  selectMode?: boolean;
+  selected?: boolean;
+}) {
   return (
-    <div className={`flex gap-2.5 pr-5 ${indent ? "pl-5" : ""}`}>
+    <div className={`flex gap-2.5 ${selectMode ? "" : "pr-5"}`}>
+      {selectMode && (
+        <div className="flex h-8 shrink-0 items-center">
+          <div
+            className={`flex h-4 w-4 items-center justify-center rounded border ${
+              selected
+                ? "border-accent bg-accent text-white dark:border-accent-dark dark:bg-accent-dark"
+                : "border-hairline bg-surface dark:border-hairline-dark dark:bg-surface-dark"
+            }`}
+          >
+            {selected && (
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            )}
+          </div>
+        </div>
+      )}
       <div
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-serif text-sm italic font-semibold ${CARD_ACCENT.avatar}`}
       >

@@ -1,0 +1,26 @@
+<!-- Reproduces the structure of a real indeed.com job page as of 2026-09
+     (data-testid names and nesting only — styling/attrs trimmed). Added
+     after discovering the extension's original selectors, which were
+     hand-authored without ever checking a live page, didn't match Indeed's
+     current React frontend at all. -->
+<div data-testid="desktop-job-header">
+  <div>
+    <div data-testid="company-info-title-row">
+      <h5 data-testid="vj-job-title">Junior Software Engineer</h5>
+    </div>
+    <div data-testid="company-info-metadata">
+      <div>
+        <div>
+          <div data-testid="vj-company-name">Tarpon Health</div>
+        </div>
+        <div>Remote</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div data-testid="viewjob-job-content">
+  <div id="jobDetailsSection" data-testid="jobDetailsSection">
+    <h4>Job details</h4>
+    <p>Looking for a Junior Software Engineer skilled in TypeScript and React.</p>
+  </div>
+</div>

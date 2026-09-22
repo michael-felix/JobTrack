@@ -28,4 +28,21 @@ describe("parseIndeed", () => {
     const doc = loadFixture("indeed-mangled.html");
     expect(parseIndeed(doc, "https://www.indeed.com/viewjob?jk=12345")).toBeNull();
   });
+
+  it("extracts fields from Indeed's current live React frontend structure", () => {
+    // Reproduces real indeed.com markup (data-testid names/nesting) as of
+    // 2026-09 — this is the actual bug: the selectors above never matched
+    // this structure at all, only the older hand-authored fixture.
+    const doc = loadFixture("indeed-2026-live-structure.html");
+    const result = parseIndeed(doc, "https://www.indeed.com/viewjob?jk=03616222f7fd152f");
+
+    expect(result).toEqual({
+      jobTitle: "Junior Software Engineer",
+      company: "Tarpon Health",
+      location: "Remote",
+      salary: undefined,
+      jobDescription: "Job details\n\nLooking for a Junior Software Engineer skilled in TypeScript and React.",
+      jobUrl: "https://www.indeed.com/viewjob?jk=03616222f7fd152f",
+    });
+  });
 });

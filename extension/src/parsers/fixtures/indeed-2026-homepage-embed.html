@@ -1,0 +1,38 @@
+<!-- Reproduces the real structure of Indeed's homepage-embedded "view job"
+     panel as of 2026-09 (data-testid names and nesting only — styling/attrs
+     trimmed). Unlike the search-results-embedded variant (see
+     indeed-2026-live-structure.html), this one has NO vj-company-name
+     testid at all: company name is plain text inside a link to
+     /cmp/{company}, which is what the parser now keys off. -->
+<div data-testid="desktop-job-header">
+  <div data-testid="company-info-title-row">
+    <h5 data-testid="vj-job-title">Part-Time Full Stack Developer (React / Supabase)</h5>
+  </div>
+  <div data-testid="company-info-metadata">
+    <div>
+      <div>
+        <a href="https://au.indeed.com/cmp/Mycarespace?campaignid=mobvjcmp">MyCareSpace</a>
+      </div>
+      <div>
+        <div>Edgecliff NSW</div>
+        <div>&bull;</div>
+        <div>Hybrid work</div>
+      </div>
+    </div>
+    <div>
+      <div>$90,000 - $109,000 a year</div>
+    </div>
+  </div>
+</div>
+<div data-testid="viewjob-job-content">
+  <div id="jobDetailsSection" data-testid="jobDetailsSection">
+    <h4>Job details</h4>
+    <div>Pay: $90,000 - $109,000 a year</div>
+    <div>Job type: Part-time</div>
+  </div>
+  <h4 data-testid="vj-job-description-heading">Full job description</h4>
+  <div class="react-native-html-content simple-job-description-html">
+    <p>MyCareSpace connects Australians living with disability and aged care needs to verified local support and therapy providers.</p>
+    <p>As lead developer for the Connect platform, you'll take over the existing codebase.</p>
+  </div>
+</div>

@@ -57,11 +57,18 @@ Indeed's original selectors (`jobsearch-JobInfoHeader-title`,
 `inlineHeader-companyName`, `#jobDescriptionText`, ...) were exactly this
 problem: hand-authored without ever checking a live page, and didn't match
 Indeed's current React frontend at all — `parseIndeed` always returned
-`null` on a real posting. Fixed 2026-09 by checking a real indeed.com page
-and updating to the `vj-*` (view-job) `data-testid` attributes it actually
-renders, with the old selectors kept as a second-attempt fallback in case
-Indeed serves a different template variant. `indeed-2026-live-structure.html`
-is the fixture reproducing the real structure — if Indeed changes markup
+`null` on a real posting. First fix (2026-09) checked one real indeed.com
+page and added the `vj-*` (view-job) `data-testid` attributes it rendered —
+but that page turned out to be the *search-results-embedded* variant of
+Indeed's "view job" panel, and a different real page (the *homepage*-embedded
+variant, same panel, different render) had no `vj-company-name` testid at
+all: company name there is just plain text inside a link to `/cmp/{company}`,
+Indeed's stable company-profile URL prefix, which the parser now also keys
+off. Same story for the job description: it lives right after the
+`vj-job-description-heading` heading, not inside `jobDetailsSection` (which
+only holds Pay/Job-type chips, not prose) as the first fix assumed.
+`indeed-2026-live-structure.html` and `indeed-2026-homepage-embed.html` are
+the two fixtures reproducing each real variant — if Indeed changes markup
 again, the same "always returns null" failure mode is the symptom to watch
 for, and the fix is the same: fetch/inspect a real page, not just re-guess.
 

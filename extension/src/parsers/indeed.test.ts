@@ -45,4 +45,24 @@ describe("parseIndeed", () => {
       jobUrl: "https://www.indeed.com/viewjob?jk=03616222f7fd152f",
     });
   });
+
+  it("extracts fields from a real page with no vj-company-name testid", () => {
+    // Reproduces the actual live homepage-embedded "view job" panel — a
+    // real user pasted this exact page's HTML after the previous fix (which
+    // was only checked against the search-results-embedded variant) still
+    // failed to parse. That variant has no vj-company-name testid at all;
+    // company name is plain text inside a /cmp/ profile link instead.
+    const doc = loadFixture("indeed-2026-homepage-embed.html");
+    const result = parseIndeed(doc, "https://au.indeed.com/viewjob?jk=e742ae109ca059ac");
+
+    expect(result).toEqual({
+      jobTitle: "Part-Time Full Stack Developer (React / Supabase)",
+      company: "MyCareSpace",
+      location: "Edgecliff NSW",
+      salary: undefined,
+      jobDescription:
+        "MyCareSpace connects Australians living with disability and aged care needs to verified local support and therapy providers.\n\nAs lead developer for the Connect platform, you'll take over the existing codebase.",
+      jobUrl: "https://au.indeed.com/viewjob?jk=e742ae109ca059ac",
+    });
+  });
 });

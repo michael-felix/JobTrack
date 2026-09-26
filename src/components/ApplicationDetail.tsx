@@ -253,7 +253,7 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters,
               />
             </section>
 
-            {application.jobDescription && <JobDescription text={application.jobDescription} />}
+            <JobDescription text={application.jobDescription ?? ""} onSave={(text) => patch({ jobDescription: text })} />
 
             {application.notes && (
               <section className="card">
@@ -330,18 +330,73 @@ export function ApplicationDetail({ application: initial, resumes, coverLetters,
   );
 }
 
-function JobDescription({ text }: { text: string }) {
+function JobDescription({ text, onSave }: { text: string; onSave: (text: string) => Promise<void> }) {
   const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(text);
+  const [saving, setSaving] = useState(false);
   const cleaned = cleanMultilineText(text);
   const isLong = cleaned.length > DESCRIPTION_PREVIEW_LENGTH;
   const shown = expanded || !isLong ? cleaned : cleaned.slice(0, DESCRIPTION_PREVIEW_LENGTH).trimEnd() + "…";
 
+  async function handleSave() {
+    setSaving(true);
+    await onSave(draft);
+    setSaving(false);
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <section className="card">
+        <h2 className="mb-2 font-medium">Job description</h2>
+        <textarea
+          className="field-input mt-0 min-h-[160px] text-sm leading-relaxed"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          autoFocus
+        />
+        <div className="mt-2 flex gap-2">
+          <button onClick={handleSave} disabled={saving} className="btn-primary">
+            {saving && <Spinner className="h-4 w-4" />}
+            {saving ? "Saving…" : "Save"}
+          </button>
+          <button
+            onClick={() => {
+              setDraft(text);
+              setEditing(false);
+            }}
+            disabled={saving}
+            className="text-sm font-medium text-ink-muted hover:underline dark:text-ink-muted-dark"
+          >
+            Cancel
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="card">
-      <h2 className="mb-2 font-medium">Job description</h2>
-      <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-muted dark:text-ink-muted-dark">
-        {shown}
-      </p>
+      <div className="mb-2 flex items-center justify-between">
+        <h2 className="font-medium">Job description</h2>
+        <button
+          onClick={() => {
+            setDraft(text);
+            setEditing(true);
+          }}
+          className="text-sm font-medium text-accent hover:underline dark:text-accent-dark"
+        >
+          Edit
+        </button>
+      </div>
+      {cleaned ? (
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-muted dark:text-ink-muted-dark">
+          {shown}
+        </p>
+      ) : (
+        <p className="text-sm text-ink-faint dark:text-ink-faint-dark">No description added yet.</p>
+      )}
       {isLong && (
         <button
           onClick={() => setExpanded((v) => !v)}

@@ -33,4 +33,15 @@ describe("firstBlockText", () => {
     const doc = docFrom("<div id='x'><p>A</p><br><br><br><p>B</p></div>");
     expect(firstBlockText(doc, ["#x"])).toBe("A\n\nB");
   });
+
+  it("skips embedded <style> and <script> tags instead of dumping their text content", () => {
+    // Indeed embeds a literal <style>@layer htmlContent {...}</style> block
+    // directly inside the job description container; a style/script
+    // element's content is just a text node in the DOM, so without an
+    // explicit skip it gets walked and appended like any other text.
+    const doc = docFrom(
+      "<div id='x'><style>.foo { color: red; }</style><script>doStuff();</script><p>Real description text.</p></div>"
+    );
+    expect(firstBlockText(doc, ["#x"])).toBe("Real description text.");
+  });
 });

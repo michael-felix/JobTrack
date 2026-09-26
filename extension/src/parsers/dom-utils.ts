@@ -35,6 +35,7 @@ function blockText(el: Element): string {
     }
     if (node.nodeType !== Node.ELEMENT_NODE) return;
     const tag = (node as Element).tagName;
+    if (tag === "STYLE" || tag === "SCRIPT") return;
     if (tag === "BR") {
       out += "\n";
       return;
